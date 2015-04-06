@@ -1,0 +1,103 @@
+attr global userattr devStateIcon devStateStyle icon sortby webCmd widgetOverride
+attr global autoload_undefined_devices 1
+attr global logfile ./log/fhem-%Y-%m.log
+attr global modpath .
+attr global motd SecurityCheck:\
+\
+
+attr global statefile ./log/fhem.save
+attr global updateInBackground 1
+attr global verbose 3
+
+define telnetPort telnet 7072 global
+
+define WEB FHEMWEB 8083 global
+attr WEB stylesheetPrefix darksmallscreen
+
+#define WEBphone FHEMWEB 8084 global
+#attr WEBphone stylesheetPrefix smallscreen
+
+#define WEBtablet FHEMWEB 8085 global
+#attr WEBtablet stylesheetPrefix touchpad
+
+# Fake FileLog entry, to access the fhem log from FHEMWEB 
+define Logfile FileLog ./log/fhem-%Y-%m.log fakelog
+
+define autocreate autocreate
+attr autocreate filelog ./log/%NAME-%Y.log
+
+define eventTypes eventTypes ./log/eventTypes.txt
+
+# Disable this to avoid looking for new USB devices on startup
+define initialUsbCheck notify global:INITIALIZED usb create
+define TCM310_0 TCM 310 /dev/ttyUSB0@57600
+attr TCM310_0 sendInterval 0
+
+define door1 EnOcean 018C5FE1
+attr door1 IODev TCM310_0
+attr door1 room EnOcean
+attr door1 subType contact
+define FileLog_door1 FileLog ./log/door1-%Y.log door1
+attr FileLog_door1 logtype text
+attr FileLog_door1 room EnOcean
+
+define window1 EnOcean 018EF3C9
+attr window1 IODev TCM310_0
+attr window1 room EnOcean
+attr window1 subType contact
+define FileLog_window1 FileLog ./log/window1-%Y.log window1
+attr FileLog_window1 logtype text
+attr FileLog_window1 room EnOcean
+
+define act_on_door1_open notify door1:open {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_door1_closed notify door1:closed {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+
+define act_on_window1_open notify window1:open {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_window1_closed notify window1:closed {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+
+
+define Test dummy
+attr Test setList on off
+define off_Test notify Test:off {system("sudo /home/pi/test.py &")}
+define on_Test notify Test:on {system("sudo /home/pi/test.py &")}
+
+
+define EnO_contact_01821CC9 EnOcean 01821CC9
+attr EnO_contact_01821CC9 IODev TCM310_0
+attr EnO_contact_01821CC9 room EnOcean
+attr EnO_contact_01821CC9 subType contact
+define FileLog_EnO_contact_01821CC9 FileLog ./log/EnO_contact_01821CC9-%Y.log EnO_contact_01821CC9
+attr FileLog_EnO_contact_01821CC9 logtype text
+attr FileLog_EnO_contact_01821CC9 room EnOcean
+
+
+
+
+
+
+define ZWAVE1 ZWDongle /dev/ttyAMA0@115200
+
+define ZWave_SENSOR_BINARY_2 ZWave ec706ea6 2
+attr ZWave_SENSOR_BINARY_2 IODev ZWAVE1
+attr ZWave_SENSOR_BINARY_2 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC ALARM
+attr ZWave_SENSOR_BINARY_2 room ZWave
+
+define FileLog_ZWave_SENSOR_BINARY_2 FileLog ./log/ZWave_SENSOR_BINARY_2-%Y.log ZWave_SENSOR_BINARY_2
+attr FileLog_ZWave_SENSOR_BINARY_2 logtype text
+attr FileLog_ZWave_SENSOR_BINARY_2 room ZWave
+
+
+define ZWave_SENSOR_BINARY_3 ZWave ec706ea6 3
+attr ZWave_SENSOR_BINARY_3 IODev ZWAVE1
+attr ZWave_SENSOR_BINARY_3 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC
+attr ZWave_SENSOR_BINARY_3 room ZWave
+
+define FileLog_ZWave_SENSOR_BINARY_3 FileLog ./log/ZWave_SENSOR_BINARY_3-%Y.log ZWave_SENSOR_BINARY_3
+attr FileLog_ZWave_SENSOR_BINARY_3 logtype text
+attr FileLog_ZWave_SENSOR_BINARY_3 room ZWave
+
+define act_on_zwave_2_closed notify ZWave_SENSOR_BINARY_2:basicReport:.00 {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_zwave_2_open notify ZWave_SENSOR_BINARY_2:basicReport:.ff {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+
+define act_on_zwave_3_closed notify ZWave_SENSOR_BINARY_3:basicReport:.00 {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_zwave_3_open notify ZWave_SENSOR_BINARY_3:basicReport:.ff {system("sudo /home/pi/projects/dtrace/src/write_time.py&")}
