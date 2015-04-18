@@ -9,7 +9,7 @@ import time, os #for crontab
 def writeLastTime():
 	test = time.time()
 	print time.time()
-	file = open("/home/pi/projects/dtrace/data/time_file.pkl","wb")
+	file = open("/home/pi/projects/bda/data/time_file.pkl","wb")
 	pickle.dump(test,file)
 	file.close()
 	

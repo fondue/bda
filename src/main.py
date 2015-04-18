@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 # v0.1 by Dominik Imhof 03.2015
 # 
 
@@ -39,6 +39,8 @@ def sendemail(from_addr, to_addr, subject, message):
 
 maxDiff = 120
 
+
+
 def writeLastTime():
     with open("/home/pi/projects/bda/data/time_file.pkl","wb") as f:
         pickle.dump(time.time(),f)
@@ -48,8 +50,11 @@ def readLastTime():
         t = pickle.load(f)
         print(t)
         return t
-        
-print "last time:"
+ 
+ 
+while True:
+	       
+	print "last time:"
         
 #def writeLastTime():
 #	test = time.time()
@@ -58,11 +63,12 @@ print "last time:"
 #	file.close()
 
 
-if time.time() - readLastTime() >= maxDiff:
-	print "sende email" 
-	writeLastTime()
-	if __name__ == '__main__':
-		sendemail(mailSendFrom, mailSendTo, 'Alarm!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+	if time.time() - readLastTime() >= maxDiff:
+		print "sende email" 
+		writeLastTime()
+		if __name__ == '__main__':
+			sendemail(mailSendFrom, mailSendTo, 'Alarm!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+	time.sleep(60)
 		
 
 
