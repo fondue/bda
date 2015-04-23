@@ -4,6 +4,7 @@
 
 import time, os
 import pickle
+
 import smtplib
 
 mailServer = 'pop.gmail.com'
@@ -18,7 +19,7 @@ mailDebug = False
 def sendemail(from_addr, to_addr, subject, message):
     try:
         header = 'From: %s\n' % from_addr
-        header+= 'To: %s\n' % to_add
+        header+= 'To: %s\n' % to_addr
         header+= 'Subject: %s\n\n' % subject
         message = header + message
         conn = smtplib.SMTP(mailServer, mailPort)
@@ -36,39 +37,11 @@ def sendemail(from_addr, to_addr, subject, message):
         if conn:
             conn.quit()
 
-maxDiff = 120
 
 
 
-def writeLastTime():
-    with open("/home/pi/projects/bda/data/time_file.pkl","wb") as f:
-        pickle.dump(time.time(),f)
+print "sende email" 
 
-def readLastTime():
-    with open("/home/pi/projects/bda/data/time_file.pkl","rb") as f:
-        t = pickle.load(f)
-        print(t)
-        return t
- 
- 
-while True:
-	       
-	print "last time:"
-        
-#def writeLastTime():
-#	test = time.time()
-#	file = open("/home/pi/test_zeit_datei.pkl","wb")
-#	pickle.dump(test,file)
-#	file.close()
+if __name__ == '__main__':
+	sendemail(mailSendFrom, mailSendTo, 'Alarm!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 
-
-	if time.time() - readLastTime() >= maxDiff:
-		print "sende email" 
-		writeLastTime()
-		if __name__ == '__main__':
-			sendemail(mailSendFrom, mailSendTo, 'Alarm!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-	time.sleep(60)
-		
-
-
-		

@@ -49,11 +49,11 @@ define FileLog_window1 FileLog ./log/window1-%Y.log window1
 attr FileLog_window1 logtype text
 attr FileLog_window1 room EnOcean
 
-define act_on_door1_open notify door1:open {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
-define act_on_door1_closed notify door1:closed {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_door1_open notify door1:open {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_door1_closed notify door1:closed {system("sudo /home/pi/projects/bda/src/write_time.py &")}
 
-define act_on_window1_open notify window1:open {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
-define act_on_window1_closed notify window1:closed {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_window1_open notify window1:open {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_window1_closed notify window1:closed {system("sudo /home/pi/projects/bda/src/write_time.py &")}
 
 
 define Test dummy
@@ -62,13 +62,13 @@ define off_Test notify Test:off {system("sudo /home/pi/test.py &")}
 define on_Test notify Test:on {system("sudo /home/pi/test.py &")}
 
 
-define EnO_contact_01821CC9 EnOcean 01821CC9
-attr EnO_contact_01821CC9 IODev TCM310_0
-attr EnO_contact_01821CC9 room EnOcean
-attr EnO_contact_01821CC9 subType contact
-define FileLog_EnO_contact_01821CC9 FileLog ./log/EnO_contact_01821CC9-%Y.log EnO_contact_01821CC9
-attr FileLog_EnO_contact_01821CC9 logtype text
-attr FileLog_EnO_contact_01821CC9 room EnOcean
+#define EnO_contact_01821CC9 EnOcean 01821CC9
+#attr EnO_contact_01821CC9 IODev TCM310_0
+#attr EnO_contact_01821CC9 room EnOcean
+#attr EnO_contact_01821CC9 subType contact
+#define FileLog_EnO_contact_01821CC9 FileLog #./log/EnO_contact_01821CC9-%Y.log #EnO_contact_01821CC9
+#attr FileLog_EnO_contact_01821CC9 logtype text
+#attr FileLog_EnO_contact_01821CC9 room EnOcean
 
 
 
@@ -77,27 +77,41 @@ attr FileLog_EnO_contact_01821CC9 room EnOcean
 
 define ZWAVE1 ZWDongle /dev/ttyAMA0@115200
 
-define ZWave_SENSOR_BINARY_2 ZWave ec706ea6 2
-attr ZWave_SENSOR_BINARY_2 IODev ZWAVE1
-attr ZWave_SENSOR_BINARY_2 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC ALARM
-attr ZWave_SENSOR_BINARY_2 room ZWave
+define door2 ZWave ec706ea6 2
+attr door2 IODev ZWAVE1
+attr door2 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC ALARM
+attr door2 room ZWave
 
-define FileLog_ZWave_SENSOR_BINARY_2 FileLog ./log/ZWave_SENSOR_BINARY_2-%Y.log ZWave_SENSOR_BINARY_2
-attr FileLog_ZWave_SENSOR_BINARY_2 logtype text
-attr FileLog_ZWave_SENSOR_BINARY_2 room ZWave
+define FileLog_door2 FileLog ./log/door2-%Y.log door2
+attr FileLog_door2 logtype text
+attr FileLog_door2 room ZWave
 
 
-define ZWave_SENSOR_BINARY_3 ZWave ec706ea6 3
-attr ZWave_SENSOR_BINARY_3 IODev ZWAVE1
-attr ZWave_SENSOR_BINARY_3 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC
-attr ZWave_SENSOR_BINARY_3 room ZWave
+define window2 ZWave ec706ea6 3
+attr window2 IODev ZWAVE1
+attr window2 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC
+attr window2 room ZWave
 
-define FileLog_ZWave_SENSOR_BINARY_3 FileLog ./log/ZWave_SENSOR_BINARY_3-%Y.log ZWave_SENSOR_BINARY_3
-attr FileLog_ZWave_SENSOR_BINARY_3 logtype text
-attr FileLog_ZWave_SENSOR_BINARY_3 room ZWave
+define FileLog_window2 FileLog ./log/window2-%Y.log window2
+attr FileLog_window2 logtype text
+attr FileLog_window2 room ZWave
 
-define act_on_zwave_2_closed notify ZWave_SENSOR_BINARY_2:basicReport:.00 {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
-define act_on_zwave_2_open notify ZWave_SENSOR_BINARY_2:basicReport:.ff {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
+define act_on_door2_closed notify door2:basicReport:.00 {system("sudo /home/pi/projects/bda/src/write_time.py &")}
 
-define act_on_zwave_3_closed notify ZWave_SENSOR_BINARY_3:basicReport:.00 {system("sudo /home/pi/projects/dtrace/src/write_time.py &")}
-define act_on_zwave_3_open notify ZWave_SENSOR_BINARY_3:basicReport:.ff {system("sudo /home/pi/projects/dtrace/src/write_time.py&")}
+define act_on_door2_open notify door2:basicReport:.ff {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+
+define act_on_window2_closed notify window2:basicReport:.00 {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+
+define act_on_window2_open notify window2:basicReport:.ff {system("sudo /home/pi/projects/bda/src/write_time.py&")}
+
+
+
+
+
+define ZWave_SENSOR_BINARY_4 ZWave ec706ea6 4
+attr ZWave_SENSOR_BINARY_4 IODev ZWAVE1
+attr ZWave_SENSOR_BINARY_4 classes SENSOR_BINARY SENSOR_ALARM ASSOCIATION MANUFACTURER_SPECIFIC CONFIGURATION VERSION BATTERY CRC_16_ENCAP WAKE_UP FIRMWARE_UPDATE_MD MARK BASIC SCENE_ACTIVATION
+attr ZWave_SENSOR_BINARY_4 room ZWave
+define FileLog_ZWave_SENSOR_BINARY_4 FileLog ./log/ZWave_SENSOR_BINARY_4-%Y.log ZWave_SENSOR_BINARY_4
+attr FileLog_ZWave_SENSOR_BINARY_4 logtype text
+attr FileLog_ZWave_SENSOR_BINARY_4 room ZWave

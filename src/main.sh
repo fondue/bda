@@ -1,6 +1,6 @@
 #!/bin/bash
 # v0.1 by Dominik Imhof 03.2015
-# Um die Fhem zu testen
+# Für autostart
 
 
-/usr/bin/python /home/pi/projects/bda/src/main.py &
+/home/pi/projects/bda/src/main.py &
