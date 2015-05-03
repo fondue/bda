@@ -13,6 +13,7 @@ mailLogin = 'muster.bewohner@gmail.com'
 mailPass = 'braunbaer17'
 mailSendFrom = mailLogin
 mailSendTo = 'dominik.imhof@stud.hslu.ch'
+#mailSendTo = 'imhof_dominik@hotmail.com'
 mailTLS = True
 mailDebug = False
 

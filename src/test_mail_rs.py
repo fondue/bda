@@ -1,4 +1,15 @@
 #!/usr/bin/python
+# v0.1 by Dominik Imhof 03.2015
+# Liest ein E-Mail. Falls Code im Subject steht, wird eine Mail zurueck geschickt.
+
+# send
+import time, os
+#import pickle
+import smtplib
+# for GPIOs
+import RPi.GPIO as GPIO  #for GPIO
+
+# receive
 import threading
 import picamera, smtplib, sys, time
 import email, getpass, imaplib
@@ -7,6 +18,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+# receive
 interval = 3 #check emails every ... sec
 
 MailReceiveUSER = 'muster.bewohner@gmail.com'
@@ -19,6 +31,55 @@ MailSendSRV = 'mail.gmx.net'
 MailSendFROM = MailReceiveUSER
 MailSendTO = 'dominik.imhof@stud.hslu.ch'
 
+# send
+mailServer = 'pop.gmail.com'
+mailPort = 587
+mailLogin = 'muster.bewohner@gmail.com'
+mailPass = 'braunbaer17'
+mailSendFrom = mailLogin
+mailSendTo = 'dominik.imhof@stud.hslu.ch'
+mailTLS = True
+mailDebug = False
+
+# GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+GPIO.setup(24,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # wegen Taster
+switch = 24
+
+def write():
+	print 'GPIO Signal erkannt'
+
+GPIO.add_event_detect(switch, GPIO.RISING, callback=write)
+
+
+
+
+
+
+def sendemail(from_addr, to_addr, subject, message):
+    try:
+        header = 'From: %s\n' % from_addr
+        header+= 'To: %s\n' % to_addr
+        header+= 'Subject: %s\n\n' % subject
+        message = header + message
+        conn = smtplib.SMTP(mailServer, mailPort)
+        if mailDebug:
+            conn.set_debuglevel(True) #show communication with the server
+        if mailTLS:
+            conn.starttls()
+        conn.login(mailLogin, mailPass)
+        error = conn.sendmail(from_addr, to_addr, message)
+        if not error:
+            print "Successfully sent email"
+    except Exception, e:
+        print "\nSMTP Error: " + str(e)
+    finally:
+        if conn:
+            conn.quit()
+            
+            
 
 running = True
 
@@ -41,6 +102,7 @@ def checkMails():
                     email_body = data[0][1]
                     mail = email.message_from_string(email_body)
                     if mail["Subject"] == 'Code':
+                        sendemail(mailSendFrom, mailSendTo, 'Hallo!', 'Kombination der Mail-Systeme erfolgreich!\nGruesse vom PI')
                         for part in mail.walk():
                             if part.get_content_type() == 'text/plain':
                                 body = part.get_payload()
@@ -62,51 +124,9 @@ def checkMails():
         print("Error...: " + str(e1))
     except (KeyboardInterrupt, SystemExit):
        exit()
+            
+while True:            
+	checkMails()
+	time.sleep(4000)
+	
 
-
-# Send EMail
-#def sendMail( msg='Ihre Anfrage', subject='Antwort vom Pi', raspicam=False ):
-#    if raspicam:
-        # Foto erstellen
-#        fn = 'foto.jpg'
-#        camera = picamera.PiCamera()
-#        camera.capture(fn, resize=(640,480))
-#        camera.close()
-    # E-Mail zusammensetzen
-#    mime = MIMEMultipart()
-#    mime['From'] = MailSendFROM
-#    mime['To'] = MailSendTO
-#    mime['Subject'] = Header(subject, 'utf-8')
-#    mime.attach(MIMEText(msg, 'plain', 'utf-8'))
-    # Bild hinzufuegen
-#    if raspicam:
-#        f = open(fn, 'rb')
-#        img = MIMEImage( f.read() )
-#        f.close()
-#        mime.attach(img)
-    # Mail versenden
-    
-#def sendMail():
-#    smtp = smtplib.SMTP(MailSendSRV)
-#    smtp.starttls()
-#    smtp.login(MailSendUSER, MailSendPWD)
-#    smtp.sendmail(MailSendFROM, [MailSendTO], "Hello")
-#   smtp.quit()
-
-
-checkMails()
-
-
-#if __name__ == '__main__':
-#    try:
-#        running = True
-#        # Start checkMails Thread
-#        checkMails_thread = threading.Thread(target=checkMails)
-#        checkMails_thread.start()
-#    except Exception, e1:
-#        print("Error...: " + str(e1))
-#    except (KeyboardInterrupt, SystemExit):
-#        running = False
-#        print("Schliesse Programm..")
-
-# this is the main (2.) thread which exits after all is done, so Dont close here! 
