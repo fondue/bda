@@ -1,4 +1,6 @@
 #!/usr/bin/python
+#Teste damit das Parsen der Zeilen von der Mail
+
 import threading
 import picamera, smtplib, sys, time
 import email, getpass, imaplib
@@ -45,14 +47,31 @@ def checkMails():
                             if part.get_content_type() == 'text/plain':
                                 body = part.get_payload()
                                 #  For each line in message execute instructions
-                                with open("/home/pi/projects/bda/data/test.txt","w") as f:
-									for line in body.split('\r\n'):
-										if line != "":
-											print("Wort erkannt")
-											f.write(line+"\n")
+                                for line in body.split('\r\n'):
+									if line != " ":
+										if line[0:5] == "mail:":
+											address = line[6:len(line)]
+											print address
+											with open("/home/pi/projects/bda/data/address.txt","w") as f:
+												f.write(address+"\n")
+												f.close()
+												
+										if line[0:9] == "schwelle:":
+											schwelle = line[10:len(line)]
+											print schwelle
+											with open("/home/pi/projects/bda/data/schwelle.txt","w") as f:
+												f.write(schwelle+"\n")
+												f.close()
+										
+										
+										
+										
+										#if line != "":
+											#print("Wort erkannt")
+											#f.write(line+"\n")
 											#sendMail()
-										elif line == "Text":
-											print("Text erkannt")
+										#elif line == "Text":
+											#print("Text erkannt")
 											#...
 										#else:
 											#print("Nichts erkannt")
