@@ -20,7 +20,8 @@ from email.mime.text import MIMEText
 
 # GPIO
 GPIO.setmode(GPIO.BCM)
-print "hello"
+print "Welcome to your home"
+print "---------------------------------------------"
 GPIO.setwarnings(False)
 GPIO.setup(24,GPIO.OUT) # for LED
 GPIO.setup(25,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutwodn
@@ -30,8 +31,8 @@ button = 8
 
 def shutdown(pin):
 	print "shutdown"
-	#os.system("sudo shutdown -h now")
-	time.sleep(5)	
+	os.system("sudo shutdown -h now")
+	time.sleep(10)	
 
 GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
 
@@ -61,7 +62,7 @@ mailTLS = True
 mailDebug = False
 #------------------------------------------------------------------
 
-toleranzSchwelle = 10
+#toleranzSchwelle = 10
 warnung = False
 
 #-------------------------------------------------------------------
@@ -114,19 +115,40 @@ def checkMails():
                                 # For each line in message execute instructions
 								for line in body.split('\r\n'):
 									if line != " ":
-										if line[0:5] == "mail:":
+										if line[0:5] == "Mail:":
 											address = line[6:len(line)]
 											print "Adresse aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/address.txt","w") as f:
 												f.write(address+"\n")
 												f.close()
 												
-										if line[0:9] == "schwelle:":
-											schwelle = line[10:len(line)]
-											print "Schwelle aus der Mail gelesen"
-											with open("/home/pi/projects/bda/data/schwelle.txt","w") as f:
-												f.write(schwelle+"\n")
+										if line[0:13] == "Schwelle Tag:":
+											schwelleTag = line[14:len(line)]
+											print "Schwelle Tag aus der Mail gelesen"
+											with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:
+												f.write(schwelleTag+"\n")
 												f.close()
+										
+										if line[0:15] == "Schwelle Nacht:":
+											schwelleNacht = line[16:len(line)]
+											print "Schwelle Nacht aus der Mail gelesen"
+											with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:
+												f.write(schwelleNacht+"\n")
+												f.close()
+										
+										if line[0:12] == "Tagesbeginn:":
+											tagesbeginn = line[13:len(line)]
+											print "Tagesbeginn aus der Mail gelesen"
+											with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:
+												f.write(tagesbeginn+"\n")
+												f.close()		
+										
+										if line[0:12] == "Nachtbeginn:":
+											nachtbeginn = line[13:len(line)]
+											print "Nachtbeginn aus der Mail gelesen"
+											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
+												f.write(nachtbeginn+"\n")
+												f.close()	
                                        
             time.sleep(interval)
     except Exception, e1:
@@ -156,8 +178,8 @@ def writeLastTime():
 		#f.write(str(value))
 		#f.close()
 	
-def readSchwelle():
-	f = open('/home/pi/projects/bda/data/schwelle.txt')
+def readSchwelleTag():
+	f = open('/home/pi/projects/bda/data/schwelle_tag.txt')
 	while True:
 		line = f.readline()
 		# Zero length indicates EOF
@@ -167,9 +189,24 @@ def readSchwelle():
 		# at the end of each line
 		# since it is reading from a file.
 		#print line
-		return line
+		return int(line)
 	# close the file
 	f.close()	
+
+def readSchwelleNacht():
+	f = open('/home/pi/projects/bda/data/schwelle_nacht.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
 
 def readAddress():
 	f = open('/home/pi/projects/bda/data/address.txt')
@@ -186,46 +223,126 @@ def readAddress():
 	# close the file
 	f.close()
 	
+def readTagesBeginn():
+	f = open('/home/pi/projects/bda/data/tages_beginn.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
+	
+def readNachtBeginn():
+	f = open('/home/pi/projects/bda/data/nacht_beginn.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
+	
 while True:
 	
 	#checkMails()
-	mailSendTo = readAddress()
-	print mailSendTo
-	schwelle = readSchwelle()
-	print schwelle
 	
+	tagStart = readTagesBeginn()
+	print "Start des Tages:", tagStart, "Uhr"
+	nachtStart = 18 #readNachtBeginn()
+	print "Start der Nacht:", nachtStart, "Uhr"
+	
+	localtime = time.localtime(time.time()).tm_hour
+	print "Aktuelle Stunde:", localtime
+	
+	if localtime >= tagStart and localtime < nachtStart:
+		tag = True
+		nacht = False
+		print "Es ist Tag"
+	else:
+		print "Es ist Nacht"
+		tag = False
+		nacht = True
+		
+	print "---------------------------------------------"
+	
+	mailSendTo = readAddress()
+	print "Ziel-Adresse:", mailSendTo
+	toleranzSchwelleTag = readSchwelleTag() #* 60 # Wert in der Mail muss groesser als 10 sein
+	print "Toleranz-Schwelle Tag:", toleranzSchwelleTag, "Sekunden"
+	toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
+	print "Toleranz-Schwelle Nacht:", toleranzSchwelleNacht, "Sekunden"
+	print "---------------------------------------------"
 	
 	# check: is file existing
 	if os.path.isfile('/home/pi/projects/bda/data/last_time.pkl'):
 		# time stamp of file (time when last edited)
 		lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
-		print lastTime
-		# check Toleranz
-		if time.time() - lastTime >= toleranzSchwelle:
-			print "LED ein!"
+		print "Zeit der letzten Bewegung:", lastTime
+		
+		
+		if tag == True:
+			# check Toleranz
+			if time.time() - lastTime >= toleranzSchwelleTag:
+				print "Toleranz-Schwelle Tag ueberschritten"
 			
+				for i in range (1,100):
+					GPIO.output(24,GPIO.HIGH)
+					# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl') < 5)):
+						print "Warnung quittiert Tag"
+						writeLastTime()
+						break
+					print i
+					if i == 99:
+						warnung = True # Sende definitiv eine Warnung
+					time.sleep(0.1) 
 			
-			for i in range (1,100):
-				GPIO.output(24,GPIO.HIGH)
-				# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-				if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl') < 5)):
-					print "Warnung quittiert"
-					writeLastTime()
-					break
-				print i
-				if i == 99:
-					warnung = True # Sende definitiv eine Warnung
-				time.sleep(0.1) 
-			
-			GPIO.output(24,GPIO.LOW) # Alarm ausschalten
-			
-			if warnung == True:
 				GPIO.output(24,GPIO.LOW) # Alarm ausschalten
-				writeLastTime()
-				warnung = False 
-				if __name__ == '__main__':
-					print "Sende Warnung"
-					#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+			
+				if warnung == True:
+					GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+					writeLastTime()
+					warnung = False 
+					if __name__ == '__main__':
+						print "Sende Warnung"
+						#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+		
+		if nacht == True:
+			if time.time() - lastTime >= toleranzSchwelleNacht:
+				print "Toleranz-Schwelle Nacht ueberschritten"
+			
+				for i in range (1,100):
+					GPIO.output(24,GPIO.HIGH)
+					# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl') < 5)):
+						print "Warnung quittiert nacht"
+						writeLastTime()
+						break
+					print i
+					if i == 99:
+						warnung = True # Sende definitiv eine Warnung
+					time.sleep(0.1) 
+			
+				GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+			
+				if warnung == True:
+					GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+					writeLastTime()
+					warnung = False 
+					if __name__ == '__main__':
+						print "Sende Warnung"
+						#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 	time.sleep(12) 
 		
 
