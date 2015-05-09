@@ -22,18 +22,18 @@ from email.mime.text import MIMEText
 GPIO.setmode(GPIO.BCM)
 print "hello"
 GPIO.setwarnings(False)
-# for LED
-GPIO.setup(24,GPIO.OUT)
-# for Shutwodn
-GPIO.setup(25,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-switch = 25
+GPIO.setup(24,GPIO.OUT) # for LED
+GPIO.setup(25,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutwodn
+shutdownSwitch = 25
+GPIO.setup(8,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
+button = 8
 
 def shutdown(pin):
 	print "shutdown"
 	#os.system("sudo shutdown -h now")
-	time.sleep(10)	
+	time.sleep(5)	
 
-GPIO.add_event_detect(switch, GPIO.RISING, callback=shutdown)
+GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
 
 
 
@@ -61,8 +61,8 @@ mailTLS = True
 mailDebug = False
 #------------------------------------------------------------------
 
-maxDiff = 20
-
+toleranzSchwelle = 10
+warnung = False
 
 #-------------------------------------------------------------------
 
@@ -110,20 +110,20 @@ def checkMails():
                     if mail["Subject"] == 'Code':
                         for part in mail.walk():
                             if part.get_content_type() == 'text/plain':
-                                body = part.get_payload()
-                                #  For each line in message execute instructions
+								body = part.get_payload()
+                                # For each line in message execute instructions
 								for line in body.split('\r\n'):
 									if line != " ":
 										if line[0:5] == "mail:":
 											address = line[6:len(line)]
-											print address
+											print "Adresse aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/address.txt","w") as f:
 												f.write(address+"\n")
 												f.close()
 												
 										if line[0:9] == "schwelle:":
 											schwelle = line[10:len(line)]
-											print schwelle
+											print "Schwelle aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/schwelle.txt","w") as f:
 												f.write(schwelle+"\n")
 												f.close()
@@ -188,12 +188,12 @@ def readAddress():
 	
 while True:
 	
-	checkMails()
-	address = readAddress()
-	print address
+	#checkMails()
+	mailSendTo = readAddress()
+	print mailSendTo
 	schwelle = readSchwelle()
 	print schwelle
-
+	
 	
 	# check: is file existing
 	if os.path.isfile('/home/pi/projects/bda/data/last_time.pkl'):
@@ -201,16 +201,32 @@ while True:
 		lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
 		print lastTime
 		# check Toleranz
-		if time.time() - lastTime >= maxDiff:
+		if time.time() - lastTime >= toleranzSchwelle:
 			print "LED ein!"
-			GPIO.output(24,GPIO.HIGH)
-			time.sleep(1)
-			GPIO.output(24,GPIO.LOW)
-			writeLastTime()
-			if __name__ == '__main__':
-				print "sende Warnung"
-				#sendemail(mailSendFrom, address, schwelle, 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-	time.sleep(30) 
+			
+			
+			for i in range (1,100):
+				GPIO.output(24,GPIO.HIGH)
+				# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+				if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl') < 5)):
+					print "Warnung quittiert"
+					writeLastTime()
+					break
+				print i
+				if i == 99:
+					warnung = True # Sende definitiv eine Warnung
+				time.sleep(0.1) 
+			
+			GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+			
+			if warnung == True:
+				GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+				writeLastTime()
+				warnung = False 
+				if __name__ == '__main__':
+					print "Sende Warnung"
+					#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+	time.sleep(12) 
 		
 
 

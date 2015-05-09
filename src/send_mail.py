@@ -44,5 +44,5 @@ def sendemail(from_addr, to_addr, subject, message):
 print "sende email" 
 
 if __name__ == '__main__':
-	sendemail(mailSendFrom, mailSendTo, 'Alarm!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+	sendemail(mailSendFrom, mailSendTo, 'Warnung', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 
