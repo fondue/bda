@@ -259,7 +259,7 @@ while True:
 	
 	tagStart = readTagesBeginn()
 	print "Start des Tages:", tagStart, "Uhr"
-	nachtStart = 18 #readNachtBeginn()
+	nachtStart = readNachtBeginn()
 	print "Start der Nacht:", nachtStart, "Uhr"
 	
 	localtime = time.localtime(time.time()).tm_hour
