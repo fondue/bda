@@ -1,16 +1,26 @@
 #!/usr/bin/python
 # v0.1 by Dominik Imhof 03.2015
-# Um die crontab zu testen
 
-#import pickle
-import time, os #for crontab
 
+import os #for os.system
+import time
+import pickle
 
 def writeLastTime():
-	test = time.time()
-	print time.time()
-	with open("/home/pi/projects/bda/data/last_time.txt","w") as f:
-		f.write(str(test))
-		f.close()
-	
+    with open('/home/pi/projects/bda/data/last_time.pkl','wb') as f:
+		value = time.time()
+		print value
+		pickle.dump(value,f)
+		#value = time.time()
+		#print value
+		#f.write(str(value))
+		#f.close()
+
+		
 writeLastTime()
+
+
+
+
+
+
