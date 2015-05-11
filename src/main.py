@@ -318,9 +318,7 @@ while True:
 		lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
 		print "Zeit der letzten Bewegung:", lastTime
 		
-		
-		
-		
+	
 		
 		
 		
