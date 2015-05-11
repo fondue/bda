@@ -319,7 +319,45 @@ while True:
 		print "Zeit der letzten Bewegung:", lastTime
 		
 	
+	openOld = True
+	closedOld = False
+
+	if time_open >= time_closed:
+		open = True
+		closed = False
+
+	if time_closed >= time_open:
+		open = False
+		closed = True
+
+
+
+
+	if openOld == open:
+		hasChanged = False
+	else:
+		hasChanged = True
+
+	if closedOld == closed:
+		hasChanged = False
+	else:
+		hasChanged = True
+
+
+	openOld = open
+	closedOld = closed
+
+
+	if hasChanged == True:
+		#save timestamp of changed 
+		if time_closed >= time_open:
+			os.path.getmtime('/home/pi/projects/bda/data/time_closed.pkl')
+		if time_open >= time_closed:
+			os.path.getmtime('/home/pi/projects/bda/data/time_open.pkl')
+			
 		
+		#prüfe Zeit immer mit diesem Timestamp
+	
 		
 		
 		
