@@ -38,12 +38,13 @@ GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
 
 
 
-# Receive Mail
-interval = 3 #check emails every ... sec
+# Receive mail
 
-MailReceiveUSER = 'muster.bewohner@gmail.com'
-MailReceivePWD = 'braunbaer17'
-MailReceiveSRV = 'imap.gmail.com'
+#MailReceiveUSER = 'dominik.imhof@stud.hslu.ch'
+MailReceiveUSER = 'bda15-inat@ihomelab-lists.ch'
+MailReceivePWD = 'PCnO5CMU'
+#MailReceiveSRV = 'imap.hslu.ch'
+MailReceiveSRV = 'imap.mail.hostpoint.ch'
 
 MailSendUSER = ''
 MailSendPWD = ''
@@ -57,7 +58,7 @@ mailPort = 587
 mailLogin = 'muster.bewohner@gmail.com'
 mailPass = 'braunbaer17'
 mailSendFrom = mailLogin
-#mailSendTo = 'dominik.imhof@stud.hslu.ch'
+mailSendTo = 'dominik.imhof@stud.hslu.ch'
 mailTLS = True
 mailDebug = False
 #------------------------------------------------------------------
@@ -66,6 +67,8 @@ mailDebug = False
 warnung = False
 
 #-------------------------------------------------------------------
+
+# Send Mail
 
 def sendemail(from_addr, to_addr, subject, message):
     try:
@@ -90,6 +93,7 @@ def sendemail(from_addr, to_addr, subject, message):
 
 # check Mails
 running = True
+newMails = False
 
 def checkMails():
     try:
@@ -109,12 +113,17 @@ def checkMails():
                     email_body = data[0][1]
                     mail = email.message_from_string(email_body)
                     if mail["Subject"] == 'Code':
-                        for part in mail.walk():
-                            if part.get_content_type() == 'text/plain':
+						print "New mail received: Code-Word accepted"
+						global newMails 
+						newMails = True
+						for part in mail.walk():
+							if part.get_content_type() == 'text/plain':
 								body = part.get_payload()
+								#print "got payload"
                                 # For each line in message execute instructions
 								for line in body.split('\r\n'):
 									if line != " ":
+										#print "lese..."
 										if line[0:5] == "Mail:":
 											address = line[6:len(line)]
 											print "Adresse aus der Mail gelesen"
@@ -148,9 +157,18 @@ def checkMails():
 											print "Nachtbeginn aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
 												f.write(nachtbeginn+"\n")
-												f.close()	
+												f.close()
+										
+										if line[0:6] == "Status":
+											nachtbeginn = line[13:len(line)]
+											print "Nachtbeginn aus der Mail gelesen"
+											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
+												f.write(nachtbeginn+"\n")
+												f.close()
+										
+										
                                        
-            time.sleep(interval)
+            time.sleep(0.2)
     except Exception, e1:
         print("Error...: " + str(e1))
     except (KeyboardInterrupt, SystemExit):
@@ -255,25 +273,23 @@ def readNachtBeginn():
 	
 while True:
 	
-	#checkMails()
+	checkMails()
 	
 	tagStart = readTagesBeginn()
 	print "Start des Tages:", tagStart, "Uhr"
 	nachtStart = readNachtBeginn()
 	print "Start der Nacht:", nachtStart, "Uhr"
-	
 	localtime = time.localtime(time.time()).tm_hour
 	print "Aktuelle Stunde:", localtime
 	
 	if localtime >= tagStart and localtime < nachtStart:
 		tag = True
 		nacht = False
-		print "Es ist Tag"
+		print "It's day"
 	else:
-		print "Es ist Nacht"
+		print "It's night"
 		tag = False
-		nacht = True
-		
+		nacht = True	
 	print "---------------------------------------------"
 	
 	mailSendTo = readAddress()
@@ -283,12 +299,38 @@ while True:
 	toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
 	print "Toleranz-Schwelle Nacht:", toleranzSchwelleNacht, "Sekunden"
 	print "---------------------------------------------"
+
+	# send state
+	if newMails == True:
+		print "new mails received"
+		newMails = False
+		if __name__ == '__main__':
+			print "Sende Status"
+			sendemail(mailSendFrom, mailSendTo, "Status!", "Ziel-Adresse: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart))
+	else:
+		print "no new mails received"
+	print "---------------------------------------------"
 	
-	# check: is file existing
+	
+	# check: is activity
 	if os.path.isfile('/home/pi/projects/bda/data/last_time.pkl'):
 		# time stamp of file (time when last edited)
 		lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
 		print "Zeit der letzten Bewegung:", lastTime
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		
 		if tag == True:
@@ -316,7 +358,7 @@ while True:
 					warnung = False 
 					if __name__ == '__main__':
 						print "Sende Warnung"
-						#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 		
 		if nacht == True:
 			if time.time() - lastTime >= toleranzSchwelleNacht:
@@ -342,7 +384,7 @@ while True:
 					warnung = False 
 					if __name__ == '__main__':
 						print "Sende Warnung"
-						#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 	time.sleep(12) 
 		
 
