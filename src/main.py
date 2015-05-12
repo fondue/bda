@@ -472,7 +472,7 @@ while True:
 		print "Entrance registered last activity"
 		lastTime = lastTimeEntrance
 		
-	if tag == True:
+	if tag == True: #!!!!!!!!!!!
 		if tag == True:
 			# check Toleranz
 			if time.time() - lastTime >= toleranzSchwelleTag:
@@ -521,15 +521,36 @@ while True:
 					if __name__ == '__main__':
 						print "Sende Warnung"
 						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-		
+	if nacht == True: #!!!!!!!!!!!!!!!!!!!!
 		if nacht == True:
 			if time.time() - lastTime >= toleranzSchwelleNacht:
 				print "Toleranz-Schwelle Nacht ueberschritten"
 			
 				for i in range (1,100):
 					GPIO.output(24,GPIO.HIGH)
+					
+					getHasChangedEntrance()
+					if hasChangedEntrance == True:
+					#save timestamp of changed 
+						if closedEntrance == True:
+							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+						if openedEntrance == True:
+							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+					
+					getHasChangedKitchen()
+					if hasChangedKitchen == True:
+					#save timestamp of changed 
+						if closedKitchen == True:
+							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+						if openedKitchen == True:
+							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+					
+					
 					# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl') < 5)):
+					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+						print time.time() - lastTimeKitchen
+						print time.time() - lastTimeEntrance
+						print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
 						print "Warnung quittiert nacht"
 						writeLastTime()
 						break
