@@ -7,20 +7,9 @@ import time
 import pickle
 
 def writeLastTime():
-    with open('/home/pi/projects/bda/data/time_zwave.pkl','wb') as f:
+    with open('/home/pi/projects/bda/data/time_open_entrance.pkl','wb') as f:
 		value = time.time()
 		print value
 		pickle.dump(value,f)
-		#value = time.time()
-		#print value
-		#f.write(str(value))
-		#f.close()
-
 		
 writeLastTime()
-
-
-
-
-
-

@@ -36,6 +36,22 @@ def shutdown(pin):
 
 GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
 
+# for change detection
+openOldKitchen = False
+closedOldKitchen = True
+openedKitchen = False
+closedKitchen = True
+hasChangedKitchen = False
+lastTimeEntrance = time.time()
+
+openOldEntrance = False
+closedOldEntrance = True
+openedEntrance = False
+closedEntrance = True
+hasChangedEntrance = False
+lastTimeEntrance = time.time()
+#------------------------
+
 
 
 # Receive mail
@@ -271,9 +287,111 @@ def readNachtBeginn():
 	# close the file
 	f.close()
 	
+            
+def writeOpenKitchen():
+    with open('/home/pi/projects/bda/data/time_open_kitchen.pkl','wb') as f:
+		value = time.time()
+		print "open kitchen: ", value
+		pickle.dump(value,f)
+		
+def writeClosedKitchen():
+    with open('/home/pi/projects/bda/data/time_closed_kitchen.pkl','wb') as f:
+		value = time.time()
+		print "closed kitchen: ", value
+		pickle.dump(value,f)
+		
+            
+def writeOpenEntrance():
+    with open('/home/pi/projects/bda/data/time_open_entrance.pkl','wb') as f:
+		value = time.time()
+		print "open entrance: ", value
+		pickle.dump(value,f)
+		
+def writeClosedEntrance():
+    with open('/home/pi/projects/bda/data/time_closed_entrance.pkl','wb') as f:
+		value = time.time()
+		print "closed entrance", value
+		pickle.dump(value,f)
+		
+def getHasChangedKitchen():
+	
+	time_open = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+	time_closed = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+	global openOldKitchen
+	global closedOldKitchen
+	global openedKitchen
+	global closedKitchen
+	global hasChangedKitchen
+
+	if time_open >= time_closed:
+		openedKitchen = True
+		closedKitchen = False
+
+	if time_closed >= time_open:
+		openedKitchen = False
+		closedKitchen = True
+
+	if openOldKitchen == openedKitchen:
+		hasChangedKitchen = False
+	else:
+		hasChangedKitchen = True
+
+	if closedOldKitchen == closedKitchen:
+		hasChangedKitchen = False
+	else:
+		hasChangedKitchen = True
+		
+	openOldKitchen = openedKitchen
+	closedOldKitchen = closedKitchen
+	
+	return hasChangedKitchen
+	
+def getHasChangedEntrance():
+	
+	time_open = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+	time_closed = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+	global openOldEntrance
+	global closedOldEntrance
+	global openedEntrance
+	global closedEntrance
+	global hasChangedEntrance
+
+	if time_open >= time_closed:
+		openedEntrance = True
+		closedEntrance = False
+
+	if time_closed >= time_open:
+		openedEntrance = False
+		closedEntrance = True
+
+	if openOldEntrance == openedEntrance:
+		hasChangedEntrance = False
+	else:
+		hasChangedEntrance = True
+
+	if closedOldEntrance == closedEntrance:
+		hasChangedEntrance = False
+	else:
+		hasChangedEntrance = True
+		
+	openOldEntrance = openedEntrance
+	closedOldEntrance = closedEntrance
+	
+	return hasChangedEntrance
+	
+# Simulates an activity at the beginning of the programm
+writeOpenKitchen()
+writeClosedKitchen()
+writeOpenEntrance()
+writeClosedEntrance()
+lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+# ------------------------------------------------------
+
+
 while True:
 	
-	checkMails()
+	#checkMails()
 	
 	tagStart = readTagesBeginn()
 	print "Start des Tages:", tagStart, "Uhr"
@@ -283,9 +401,10 @@ while True:
 	print "Aktuelle Stunde:", localtime
 	
 	if localtime >= tagStart and localtime < nachtStart:
+		print "It's day"
 		tag = True
 		nacht = False
-		print "It's day"
+		
 	else:
 		print "It's night"
 		tag = False
@@ -313,60 +432,47 @@ while True:
 	
 	
 	# check: is activity
-	if os.path.isfile('/home/pi/projects/bda/data/last_time.pkl'):
+	if os.path.isfile('/home/pi/projects/bda/data/time_zwave.pkl'):
 		# time stamp of file (time when last edited)
-		lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
-		print "Zeit der letzten Bewegung:", lastTime
+		lastTimeZWave = os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
+		print "Time of last activity of ZWave: ", lastTimeZWave
 		
-	
-	openOld = True
-	closedOld = False
-
-	if time_open >= time_closed:
-		opened = True
-		closed = False
-
-	if time_closed >= time_open:
-		opened = False
-		closed = True
-
-
-	if openOld == opened:
-		hasChanged = False
-	else:
-		hasChanged = True
-
-	if closedOld == closed:
-		hasChanged = False
-	else:
-		hasChanged = True
-
-
-	openOld = opened
-	closedOld = closed
-
-
-	if hasChanged == True:
+	getHasChangedKitchen()
+	#global actual_time
+	if hasChangedKitchen == True:
 		#save timestamp of changed 
-		if time_closed >= time_open:
-			os.path.getmtime('/home/pi/projects/bda/data/time_closed.pkl')
-		if time_open >= time_closed:
-			os.path.getmtime('/home/pi/projects/bda/data/time_open.pkl')
-			
-		
-		#prüfe Zeit immer mit diesem Timestamp
+		if closedKitchen == True:
+			lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+		if openedKitchen == True:
+			lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+	print "Time of last activity in kitchen:", lastTimeKitchen
 	
+	getHasChangedEntrance()
+	#global actual_time
+	if hasChangedEntrance == True:
+		#save timestamp of changed 
+		if closedEntrance == True:
+			lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+		if openedKitchen == True:
+			lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+	print "Time of last activity in entrance:" , lastTimeEntrance
+	# ------------------------------------------------------------
+			
+#Find greatest time:
 		
+	if lastTimeZWave >= lastTimeEntrance and lastTimeZWave >= lastTimeEntrance:
+		print "ZWave registered last activity"
+		lastTime = lastTimeZWave
+	
+	if lastTimeKitchen >= lastTimeEntrance and lastTimeKitchen >= lastTimeZWave:
+		print "Kitchen registered last activity"
+		lastTime = lastTimeKitchen
 		
+	if lastTimeEntrance >= lastTimeKitchen and lastTimeEntrance >= lastTimeZWave:
+		print "Entrance registered last activity"
+		lastTime = lastTimeEntrance
 		
-		
-		
-		
-		
-		
-		
-		
-		
+	if tag == True:
 		if tag == True:
 			# check Toleranz
 			if time.time() - lastTime >= toleranzSchwelleTag:
@@ -374,10 +480,32 @@ while True:
 			
 				for i in range (1,100):
 					GPIO.output(24,GPIO.HIGH)
+					
+					getHasChangedEntrance()
+					if hasChangedEntrance == True:
+					#save timestamp of changed 
+						if closedEntrance == True:
+							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+						if openedEntrance == True:
+							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+					
+					getHasChangedKitchen()
+					if hasChangedKitchen == True:
+					#save timestamp of changed 
+						if closedKitchen == True:
+							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+						if openedKitchen == True:
+							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+					
+					
 					# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl') < 5)):
+					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+						print time.time() - lastTimeKitchen
+						print time.time() - lastTimeEntrance
+						print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
 						print "Warnung quittiert Tag"
 						writeLastTime()
+						# !!!!!!!!!!!! noch ergaenzen mit write der anderen
 						break
 					print i
 					if i == 99:
@@ -392,7 +520,7 @@ while True:
 					warnung = False 
 					if __name__ == '__main__':
 						print "Sende Warnung"
-						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+						#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 		
 		if nacht == True:
 			if time.time() - lastTime >= toleranzSchwelleNacht:

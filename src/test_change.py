@@ -7,13 +7,13 @@ import os
 import time
 
 # for Change
-openOld = False
-closedOld = True
-opened = False
-closed = True
-hasChanged = False
-global actual_time
-actual_time = time.time()
+openOldKitchen = False
+closedOldKitchen = True
+openedKitchen = False
+closedKitchen = True
+hasChangedKitchen = False
+#global actual_time_kitchen
+actual_time_kitchen = time.time()
 #------------------------
 
 
@@ -63,83 +63,85 @@ def sendemail(from_addr, to_addr, subject, message):
     finally:
         if conn:
             conn.quit()
-
-def writeLastTimeOpen():
-    with open('/home/pi/projects/bda/data/time_open.pkl','wb') as f:
+            
+def writeOpenKitchen():
+    with open('/home/pi/projects/bda/data/time_open_kitchen.pkl','wb') as f:
+		value = time.time()
+		print value
+		pickle.dump(value,f)
+		
+def writeClosedKitchen():
+    with open('/home/pi/projects/bda/data/time_closed_kitchen.pkl','wb') as f:
 		value = time.time()
 		print value
 		pickle.dump(value,f)
 
-def writeLastTimeClosed():
-    with open('/home/pi/projects/bda/data/time_closed.pkl','wb') as f:
-		value = time.time()
-		print value
-		pickle.dump(value,f)
+
 
 
 def getHasChangedKitchen():
 	
 	time_open = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
 	time_closed = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
-	global openOld
-	global closedOld
-	global opened
-	global closed
-	global hasChanged
+	global openOldKitchen
+	global closedOldKitchen
+	global openedKitchen
+	global closedKitchen
+	global hasChangedKitchen
 
 	if time_open >= time_closed:
-		opened = True
-		closed = False
+		openedKitchen = True
+		closedKitchen = False
 
 	if time_closed >= time_open:
-		opened = False
-		closed = True
+		openedKitchen = False
+		closedKitchen = True
 
-	if openOld == opened:
-		hasChanged = False
+	if openOldKitchen == openedKitchen:
+		hasChangedKitchen = False
 	else:
-		hasChanged = True
+		hasChangedKitchen = True
 
-	if closedOld == closed:
-		hasChanged = False
+	if closedOldKitchen == closedKitchen:
+		hasChangedKitchen = False
 	else:
-		hasChanged = True
+		hasChangedKitchen = True
 		
-	openOld = opened
-	closedOld = closed
+	openOldKitchen = openedKitchen
+	closedOldKitchen = closedKitchen
 	
-	return hasChanged
+	return hasChangedKitchen
 
-
-
-#writeLastTimeOpen()
-#time.sleep(1)
-#writeLastTimeClosed()
+# Simulates an activity at the beginning of the programm
+writeOpenKitchen()
+writeClosedKitchen()
+actual_time_kitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+# ------------------------------------------------------
 
 while True:
 	
 	getHasChangedKitchen()
 	#global actual_time
-	if hasChanged == True:
+	if hasChangedKitchen == True:
 		#save timestamp of changed 
-		if closed == True:
-			actual_time = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
-		if opened == True:
-			actual_time = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+		if closedKitchen == True:
+			actual_time_kitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+		if openedKitchen == True:
+			actual_time_kitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
 		
 		
 	print "-------------"
-	print actual_time
+	print actual_time_kitchen
 	
 			
-	if time.time() - actual_time >= 15:
+	if time.time() - actual_time_kitchen >= 15:
 		print "Warnung!"
-		actual_time = time.time()
+		actual_time_kitchen = time.time()
 		print "Sende mail"
 		#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Test: Zu wenig Aktivitaet wurde festgestellt!\nGruesse vom PI')
 
 	
-	print "actual time: " + str(actual_time)
+	print "actual time kitchen: " + str(actual_time_kitchen)
 	print "--------------"
 	time.sleep(1)
 			
