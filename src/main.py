@@ -391,7 +391,7 @@ lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entr
 
 while True:
 	
-	#checkMails()
+	checkMails()
 	
 	tagStart = readTagesBeginn()
 	print "Start des Tages:", tagStart, "Uhr"
@@ -520,7 +520,7 @@ while True:
 					warnung = False 
 					if __name__ == '__main__':
 						print "Sende Warnung"
-						#sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 		
 		if nacht == True:
 			if time.time() - lastTime >= toleranzSchwelleNacht:
@@ -547,7 +547,7 @@ while True:
 					if __name__ == '__main__':
 						print "Sende Warnung"
 						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-	time.sleep(12) 
+	time.sleep(5) 
 		
 
 
