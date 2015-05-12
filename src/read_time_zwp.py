@@ -55,20 +55,29 @@ def writeLastTime():
 		#f.close()
 
 
-	
 while True:
+	try:
+		if time.time() - readLastTime() >= 10:
+			print "Sende mail"
+	except EOFError:
+		print "Error" 
+					
+	time.sleep(0.2)
+
+	
+#while True:
 	# check: is file existing
-    if os.path.isfile('/home/pi/projects/bda/data/last_time.pkl'):
+    #if os.path.isfile('/home/pi/projects/bda/data/last_time.pkl'):
 		# time stamp of file (time when last edited)
-		lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
-		print lastTime
-		if time.time() - lastTime >= maxDiff:
-			print "LED ein!"
-			GPIO.output(24,GPIO.HIGH)
-			time.sleep(1)
-			GPIO.output(24,GPIO.LOW)
-			writeLastTime()
-    time.sleep(1) 
+		#lastTime = os.path.getmtime('/home/pi/projects/bda/data/last_time.pkl')
+		#print lastTime
+		#if time.time() - lastTime >= maxDiff:
+			#print "LED ein!"
+			#GPIO.output(24,GPIO.HIGH)
+			#time.sleep(1)
+			#GPIO.output(24,GPIO.LOW)
+			#writeLastTime()
+    #time.sleep(1) 
 
 
 

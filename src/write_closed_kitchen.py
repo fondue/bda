@@ -7,7 +7,7 @@ import time
 import pickle
 
 def writeLastTime():
-    with open('/home/pi/projects/bda/data/time_closed.pkl','wb') as f:
+    with open('/home/pi/projects/bda/data/time_closed_kitchen.pkl','wb') as f:
 		value = time.time()
 		print value
 		pickle.dump(value,f)

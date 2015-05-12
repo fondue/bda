@@ -323,17 +323,15 @@ while True:
 	closedOld = False
 
 	if time_open >= time_closed:
-		open = True
+		opened = True
 		closed = False
 
 	if time_closed >= time_open:
-		open = False
+		opened = False
 		closed = True
 
 
-
-
-	if openOld == open:
+	if openOld == opened:
 		hasChanged = False
 	else:
 		hasChanged = True
@@ -344,7 +342,7 @@ while True:
 		hasChanged = True
 
 
-	openOld = open
+	openOld = opened
 	closedOld = closed
 
 
