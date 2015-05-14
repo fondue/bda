@@ -20,11 +20,12 @@ from email.mime.text import MIMEText
 
 # GPIO
 GPIO.setmode(GPIO.BCM)
-print "Welcome to your home"
-print "---------------------------------------------"
+print "++++++++++++++++++++++++"
+print "+ Welcome to your home +"
+print "++++++++++++++++++++++++"
 GPIO.setwarnings(False)
 GPIO.setup(24,GPIO.OUT) # for LED
-GPIO.setup(25,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutwodn
+GPIO.setup(25,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
 shutdownSwitch = 25
 GPIO.setup(8,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
 button = 8
@@ -52,6 +53,10 @@ hasChangedEntrance = False
 lastTimeEntrance = time.time()
 #------------------------
 
+errorTagesbeginn = False
+errorNachtbeginn = False
+errorSchwelleNacht = False
+errorSchwelleTag = False
 
 
 # Receive mail
@@ -69,10 +74,10 @@ MailSendFROM = MailReceiveUSER
 MailSendTO = 'dominik.imhof@stud.hslu.ch'
 
 # Send Mail
-mailServer = 'pop.gmail.com'
+mailServer = 'asmtp.mail.hostpoint.ch'
 mailPort = 587
-mailLogin = 'muster.bewohner@gmail.com'
-mailPass = 'braunbaer17'
+mailLogin = 'bda15-inat@ihomelab-lists.ch'
+mailPass = 'PCnO5CMU'
 mailSendFrom = mailLogin
 mailSendTo = 'dominik.imhof@stud.hslu.ch'
 mailTLS = True
@@ -198,13 +203,13 @@ def checkMails():
 #		f.close()
 
 def readLastTime():
-	with open('/home/pi/projects/bda/data/last_time.pkl', 'rb') as f:
+	with open('/home/pi/projects/bda/data/time_zwave.pkl', 'rb') as f:
 		t = pickle.load(f)
 		print(t)
 		return t
         
 def writeLastTime():
-    with open('/home/pi/projects/bda/data/last_time.pkl','wb') as f:
+    with open('/home/pi/projects/bda/data/time_zwave.pkl','wb') as f:
 		value = time.time()
 		#print value
 		pickle.dump(value,f)
@@ -225,6 +230,21 @@ def readSchwelleTag():
 		#print line
 		return int(line)
 	# close the file
+	f.close()
+	
+def readSchwelleTagString():
+	f = open('/home/pi/projects/bda/data/schwelle_tag.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return line
+	# close the file
 	f.close()	
 
 def readSchwelleNacht():
@@ -239,6 +259,22 @@ def readSchwelleNacht():
 		# since it is reading from a file.
 		#print line
 		return int(line)
+	# close the file
+	f.close()
+
+# For error case
+def readSchwelleNachtString():
+	f = open('/home/pi/projects/bda/data/schwelle_nacht.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return line
 	# close the file
 	f.close()
 
@@ -272,6 +308,21 @@ def readTagesBeginn():
 	# close the file
 	f.close()
 	
+def readTagesBeginnString():
+	f = open('/home/pi/projects/bda/data/tages_beginn.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return line
+	# close the file
+	f.close()
+	
 def readNachtBeginn():
 	f = open('/home/pi/projects/bda/data/nacht_beginn.txt')
 	while True:
@@ -284,6 +335,21 @@ def readNachtBeginn():
 		# since it is reading from a file.
 		#print line
 		return int(line)
+	# close the file
+	f.close()
+	
+def readNachtBeginnString():
+	f = open('/home/pi/projects/bda/data/nacht_beginn.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return line
 	# close the file
 	f.close()
 	
@@ -388,17 +454,46 @@ lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitch
 lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
 # ------------------------------------------------------
 
+def sendError():
+	if errorSchwelleNacht == True:
+		errorSchwelleNacht = False
+		toleranzSchwelleNachtFehler = readSchwelleNachtString()
+		return "Error: " + toleranzSchwelleNachtFehler 
+
 
 while True:
+	print "-------------------NEW-CYCLE----------------"
+	print "____________________________________________"
 	
 	checkMails()
-	
-	tagStart = readTagesBeginn()
-	print "Start des Tages:", tagStart, "Uhr"
-	nachtStart = readNachtBeginn()
-	print "Start der Nacht:", nachtStart, "Uhr"
+	try:
+		tagStart = readTagesBeginn()
+		print "Start des Tages: ", tagStart, "Uhr"
+	except ValueError:
+		errorTagesbeginn = True
+		print "   "
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+		print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 7 wurde angenommen."
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		print "   "
+		tagStart = 7
+		print "Start des Tages: ", tagStart, "Uhr"
+		
+	try: 
+		nachtStart = readNachtBeginn()
+		print "Start der Nacht: ", nachtStart, "Uhr"
+	except ValueError:
+		errorNachtbeginn = True
+		print "   "
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+		print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 23 wurde angenommen."
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		print "   "
+		nachtStart = 23
+		print "Start des Tages: ", nachtStart, "Uhr"
+		
 	localtime = time.localtime(time.time()).tm_hour
-	print "Aktuelle Stunde:", localtime
+	print "Aktuelle Stunde: ", localtime
 	
 	if localtime >= tagStart and localtime < nachtStart:
 		print "It's day"
@@ -412,20 +507,69 @@ while True:
 	print "---------------------------------------------"
 	
 	mailSendTo = readAddress()
-	print "Ziel-Adresse:", mailSendTo
-	toleranzSchwelleTag = readSchwelleTag() #* 60 # Wert in der Mail muss groesser als 10 sein
-	print "Toleranz-Schwelle Tag:", toleranzSchwelleTag, "Sekunden"
-	toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
-	print "Toleranz-Schwelle Nacht:", toleranzSchwelleNacht, "Sekunden"
+	print "Ziel-Adresse: ", mailSendTo
+	
+	try:
+		toleranzSchwelleTag = readSchwelleTag() #* 60 # Wert in der Mail muss groesser als 10 sein
+		print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
+	except ValueError:
+		errorSchwelleTag = True
+		print "   "
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+		print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe! Wert 10 wurde angenommen."
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		print "   "
+		toleranzSchwelleTag = 10
+		print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
+		
+		
+	try:
+		toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
+		print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
+	except ValueError:
+		errorSchwelleNacht = True
+		print "   "
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+		print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe! Wert 15 wurde angenommen."
+		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		print "   "
+		toleranzSchwelleNacht = 15
+		print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
 	print "---------------------------------------------"
 
-	# send state
+
+	# send state with errors
 	if newMails == True:
 		print "new mails received"
+		
+		if errorTagesbeginn == True:
+			errorTagesbeginn = False
+			tagStartFehler = "Fehlerhafte Eingabe ==> Tagesbeginn: " + readTagesBeginnString()
+		else:
+			tagStartFehler = " "
+			
+		if errorNachtbeginn == True:
+			errorNachtbeginn = False
+			nachtStartFehler = "Fehlerhafte Eingabe ==> Nachtbeginn: " + readNachtBeginnString()
+		else:
+			nachtStartFehler = " "	
+			
+		if errorSchwelleNacht == True:
+			errorSchwelleNacht = False
+			toleranzSchwelleNachtFehler = "Fehlerhafte Eingabe ==> Schwelle Nacht: " + readSchwelleNachtString()	
+		else:
+			toleranzSchwelleNachtFehler = " "
+		
+		if errorSchwelleTag == True:
+			errorSchwelleTag = False
+			toleranzSchwelleTagFehler = "Fehlerhafte Eingabe ==> Schwelle Tag: " + readSchwelleTagString()	
+		else:
+			toleranzSchwelleTagFehler = " "
+		
 		newMails = False
 		if __name__ == '__main__':
 			print "Sende Status"
-			sendemail(mailSendFrom, mailSendTo, "Status!", "Ziel-Adresse: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart))
+			sendemail(mailSendFrom, mailSendTo, "Status!", "Ziel-Adresse: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
 	else:
 		print "no new mails received"
 	print "---------------------------------------------"
@@ -568,7 +712,7 @@ while True:
 					if __name__ == '__main__':
 						print "Sende Warnung"
 						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-	time.sleep(5) 
+	time.sleep(20) 
 		
 
 

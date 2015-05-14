@@ -7,10 +7,10 @@ import pickle
 
 import smtplib
 
-mailServer = 'pop.gmail.com'
+mailServer = 'asmtp.mail.hostpoint.ch'
 mailPort = 587
-mailLogin = 'muster.bewohner@gmail.com'
-mailPass = 'braunbaer17'
+mailLogin = 'bda15-inat@ihomelab-lists.ch'
+mailPass = 'PCnO5CMU'
 mailSendFrom = mailLogin
 mailSendTo = 'dominik.imhof@stud.hslu.ch'
 #mailSendTo = 'imhof_dominik@hotmail.com'
@@ -38,11 +38,36 @@ def sendemail(from_addr, to_addr, subject, message):
         if conn:
             conn.quit()
 
+def readSchwelleNachtString():
+	f = open('/home/pi/projects/bda/data/schwelle_nacht.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return line
+	# close the file
+	f.close()
+	
+errorSchwelleNacht = True
 
+#def sendError():
+	
+	#global errorSchwelleNacht
+	#if errorSchwelleNacht == True:
+	#	errorSchwelleNacht = False
+	#	toleranzSchwelleNachtFehler = readSchwelleNachtString()
+	#	return "Error: " + toleranzSchwelleNachtFehler 
+	
+toleranzSchwelleNachtFehler = "Fehler Schwelle Nacht: " + readSchwelleNachtString()
 
 
 print "sende email" 
 
 if __name__ == '__main__':
-	sendemail(mailSendFrom, mailSendTo, 'Warnung', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+	sendemail(mailSendFrom, mailSendTo, "Warnung", toleranzSchwelleNachtFehler)
 
