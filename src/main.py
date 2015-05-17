@@ -153,15 +153,12 @@ def checkMails():
 								body = part.get_payload()
 								#print "got payload"
                                 # For each line in message execute instructions
-								for line in body.split('\r\n'):
+								for line in body.split('=0A=\r\n'):
 									if line != " ":
 										#print "lese..."
 										if line[0:5] == "Mail:":
 											address = line[6:len(line)]
 											print "Adresse aus der Mail gelesen"
-											with open("/home/pi/projects/bda/data/address.txt","w") as f:
-												f.write("")
-												f.close()
 											with open("/home/pi/projects/bda/data/address.txt","w") as f:
 												f.write(address)
 												f.close()
@@ -177,28 +174,28 @@ def checkMails():
 											schwelleNacht = line[16:len(line)]
 											print "Schwelle Nacht aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:
-												f.write(schwelleNacht+"\n")
+												f.write(schwelleNacht)
 												f.close()
 										
 										if line[0:12] == "Tagesbeginn:":
 											tagesbeginn = line[13:len(line)]
 											print "Tagesbeginn aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:
-												f.write(tagesbeginn+"\n")
+												f.write(tagesbeginn)
 												f.close()		
 										
 										if line[0:12] == "Nachtbeginn:":
 											nachtbeginn = line[13:len(line)]
 											print "Nachtbeginn aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
-												f.write(nachtbeginn+"\n")
+												f.write(nachtbeginn)
 												f.close()
 										
 										if line[0:6] == "Status":
 											nachtbeginn = line[13:len(line)]
 											print "Nachtbeginn aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
-												f.write(nachtbeginn+"\n")
+												f.write(nachtbeginn)
 												f.close()
 										
 										
@@ -741,7 +738,7 @@ while True:
 				
 		time.sleep(1)
 					
-	time.sleep(10) 
+	time.sleep(2) 
 		
 
 
