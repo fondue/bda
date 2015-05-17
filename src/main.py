@@ -25,17 +25,14 @@ print "+ Welcome to your home +"
 print "++++++++++++++++++++++++"
 GPIO.setwarnings(False)
 GPIO.setup(24,GPIO.OUT) # for LED
-GPIO.setup(25,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
-shutdownSwitch = 25
-GPIO.setup(8,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
-button = 8
+GPIO.setup(25,GPIO.OUT) # for LED
+GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
+shutdownSwitch = 10
+GPIO.setup(9,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
+button = 9
+GPIO.setup(11,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for residentAbsent
+residentAbsent = 11
 
-def shutdown(pin):
-	print "shutdown"
-	os.system("sudo shutdown -h now")
-	time.sleep(10)	
-
-GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
 
 # for change detection
 openOldKitchen = False
@@ -64,7 +61,7 @@ errorSchwelleTag = False
 #MailReceiveUSER = 'dominik.imhof@stud.hslu.ch'
 MailReceiveUSER = 'bda15-inat@ihomelab-lists.ch'
 MailReceivePWD = 'PCnO5CMU'
-#MailReceiveSRV = 'imap.hslu.ch'
+# MailReceiveSRV = 'imap.hslu.ch'
 MailReceiveSRV = 'imap.mail.hostpoint.ch'
 
 MailSendUSER = ''
@@ -84,10 +81,20 @@ mailTLS = True
 mailDebug = False
 #------------------------------------------------------------------
 
-#toleranzSchwelle = 10
+# toleranzSchwelle = 10
 warnung = False
+residentAbsent = False
 
 #-------------------------------------------------------------------
+
+# Shutdown switch
+def shutdown(pin):
+	print "shutdown"
+	os.system("sudo shutdown -h now")
+	time.sleep(5)	
+
+GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
+
 
 # Send Mail
 
@@ -149,15 +156,18 @@ def checkMails():
 											address = line[6:len(line)]
 											print "Adresse aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/address.txt","w") as f:
-												f.write(address+"\n")
+												f.write("")
+												f.close()
+											with open("/home/pi/projects/bda/data/address.txt","w") as f:
+												f.write(address)
 												f.close()
 												
 										if line[0:13] == "Schwelle Tag:":
 											schwelleTag = line[14:len(line)]
 											print "Schwelle Tag aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:
-												f.write(schwelleTag+"\n")
-												f.close()
+												f.write(schwelleTag)
+												#f.close()
 										
 										if line[0:15] == "Schwelle Nacht:":
 											schwelleNacht = line[16:len(line)]
@@ -490,7 +500,7 @@ while True:
 		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 		print "   "
 		nachtStart = 23
-		print "Start des Tages: ", nachtStart, "Uhr"
+		print "Start der Nacht: ", nachtStart, "Uhr"
 		
 	localtime = time.localtime(time.time()).tm_hour
 	print "Aktuelle Stunde: ", localtime
@@ -616,7 +626,7 @@ while True:
 		print "Entrance registered last activity"
 		lastTime = lastTimeEntrance
 		
-	if tag == True: #!!!!!!!!!!!
+	if residentAbsent == False:
 		if tag == True:
 			# check Toleranz
 			if time.time() - lastTime >= toleranzSchwelleTag:
@@ -664,8 +674,12 @@ while True:
 					warnung = False 
 					if __name__ == '__main__':
 						print "Sende Warnung"
+						GPIO.output(25,GPIO.HIGH)
 						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-	if nacht == True: #!!!!!!!!!!!!!!!!!!!!
+						time.sleep(1)
+						GPIO.output(25,GPIO.LOW)
+	
+	if residentAbsent == False:
 		if nacht == True:
 			if time.time() - lastTime >= toleranzSchwelleNacht:
 				print "Toleranz-Schwelle Nacht ueberschritten"
@@ -711,7 +725,10 @@ while True:
 					warnung = False 
 					if __name__ == '__main__':
 						print "Sende Warnung"
+						GPIO.output(25,GPIO.HIGH)
 						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+						time.sleep(1)
+						GPIO.output(25,GPIO.LOW)
 	time.sleep(20) 
 		
 

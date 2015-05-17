@@ -33,27 +33,31 @@ define initialUsbCheck notify global:INITIALIZED usb create
 define TCM310_0 TCM 310 /dev/ttyUSB0@57600
 attr TCM310_0 sendInterval 0
 
-define door1 EnOcean 018C5FE1
-attr door1 IODev TCM310_0
-attr door1 room EnOcean
-attr door1 subType contact
-define FileLog_door1 FileLog ./log/door1-%Y.log door1
-attr FileLog_door1 logtype text
-attr FileLog_door1 room EnOcean
+define kitchen EnOcean 018C5FE1
+attr kitchen IODev TCM310_0
+attr kitchen room EnOcean
+attr kitchen subType contact
+define FileLog_kitchen FileLog ./log/kitchen-%Y.log kitchen
+attr FileLog_kitchen logtype text
+attr FileLog_kitchen room EnOcean
 
-define window1 EnOcean 018EF3C9
-attr window1 IODev TCM310_0
-attr window1 room EnOcean
-attr window1 subType contact
-define FileLog_window1 FileLog ./log/window1-%Y.log window1
-attr FileLog_window1 logtype text
-attr FileLog_window1 room EnOcean
+define entrance EnOcean 018EF3C9
+attr entrance IODev TCM310_0
+attr entrance room EnOcean
+attr entrance subType contact
+define FileLog_entrance FileLog ./log/entrance-%Y.log entrance
+attr FileLog_entrance logtype text
+attr FileLog_entrance room EnOcean
 
-define act_on_door1_open notify door1:open {system("sudo /home/pi/projects/bda/src/write_time.py &")}
-define act_on_door1_closed notify door1:closed {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_kitchen_open notify kitchen:open {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_open_kitchen.py &")}
+define act_on_kitchen_closed notify kitchen:closed {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_closed_kitchen.py &")}
 
-define act_on_window1_open notify window1:open {system("sudo /home/pi/projects/bda/src/write_time.py &")}
-define act_on_window1_closed notify window1:closed {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_entrance_open notify entrance:open {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_open_entrance.py &")}
+define act_on_entrance_closed notify entrance:closed {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_closed_entrance.py &")}
+
+# for resident absent
+define act_on_entrance_open_alarm notify entrance:open {system("sudo /usr/bin/python /home/pi/projects/bda/src/set_alarm_light.py &")}
+define act_on_entrance_closed_alarm notify entrance:closed {system("sudo /usr/bin/python /home/pi/projects/bda/src/clear_alarm_light.py &")}
 
 
 define Test dummy
@@ -77,32 +81,32 @@ define on_Test notify Test:on {system("sudo /home/pi/test.py &")}
 
 define ZWAVE1 ZWDongle /dev/ttyAMA0@115200
 
-define door2 ZWave ec706ea6 2
-attr door2 IODev ZWAVE1
-attr door2 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC ALARM
-attr door2 room ZWave
+define toilet ZWave ec706ea6 2
+attr toilet IODev ZWAVE1
+attr toilet classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC ALARM
+attr toilet room ZWave
 
-define FileLog_door2 FileLog ./log/door2-%Y.log door2
-attr FileLog_door2 logtype text
-attr FileLog_door2 room ZWave
+define FileLog_toilet FileLog ./log/toilet-%Y.log toilet
+attr FileLog_toilet logtype text
+attr FileLog_toilet room ZWave
 
 
-define window2 ZWave ec706ea6 3
-attr window2 IODev ZWAVE1
-attr window2 classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC
-attr window2 room ZWave
+define bedroom ZWave ec706ea6 3
+attr bedroom IODev ZWAVE1
+attr bedroom classes SENSOR_BINARY CONFIGURATION WAKE_UP MANUFACTURER_SPECIFIC VERSION ASSOCIATION BATTERY MARK BASIC
+attr bedroom room ZWave
 
-define FileLog_window2 FileLog ./log/window2-%Y.log window2
-attr FileLog_window2 logtype text
-attr FileLog_window2 room ZWave
+define FileLog_bedroom FileLog ./log/bedroom-%Y.log bedroom
+attr FileLog_bedroom logtype text
+attr FileLog_bedroom room ZWave
 
-define act_on_door2_closed notify door2:basicReport:.00 {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_toilet_closed notify toilet:basicReport:.00 {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py &")}
 
-define act_on_door2_open notify door2:basicReport:.ff {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_toilet_open notify toilet:basicReport:.ff {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py &")}
 
-define act_on_window2_closed notify window2:basicReport:.00 {system("sudo /home/pi/projects/bda/src/write_time.py &")}
+define act_on_bedroom_closed notify bedroom:basicReport:.00 {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py &")}
 
-define act_on_window2_open notify window2:basicReport:.ff {system("sudo /home/pi/projects/bda/src/write_time.py&")}
+define act_on_bedroom_open notify bedroom:basicReport:.ff {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py&")}
 
 
 
