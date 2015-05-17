@@ -79,6 +79,7 @@ mailSendFrom = mailLogin
 mailSendTo = 'dominik.imhof@stud.hslu.ch'
 mailTLS = True
 mailDebug = False
+
 #------------------------------------------------------------------
 
 # toleranzSchwelle = 10
@@ -118,6 +119,9 @@ def sendemail(from_addr, to_addr, subject, message):
     finally:
         if conn:
             conn.quit()
+            
+#sendemail(mailSendFrom, mailSendTo, 'Subject-Test!', 'Hallo\nGruesse vom PI')
+    
 
 # check Mails
 running = True
@@ -475,9 +479,10 @@ while True:
 	print "-------------------NEW-CYCLE----------------"
 	print "____________________________________________"
 	
-	checkMails()
+	checkMails() # checkMails() called every 30 seconds, because of the following for loop
 	
-	for n in range (1,30):
+	# check states of sensors every second for 30 times, then checkMails()
+	for n in range (1,31):
 		try:
 			tagStart = readTagesBeginn()
 			print "Start des Tages: ", tagStart, "Uhr"
@@ -628,8 +633,8 @@ while True:
 			print "Entrance registered last activity"
 			lastTime = lastTimeEntrance
 		
-		#if residentAbsent == False:
-		if GPIO.input(button) == True:
+		if residentAbsent == False: #!!!!
+		#if GPIO.input(button) == True:
 			if tag == True:
 				# check Toleranz
 				if time.time() - lastTime >= toleranzSchwelleTag:
@@ -732,11 +737,11 @@ while True:
 							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
 							time.sleep(1)
 							GPIO.output(25,GPIO.LOW)
-		print n					
+		print "n: ",n		
+				
 		time.sleep(1)
-		
-						
-	time.sleep(1) 
+					
+	time.sleep(10) 
 		
 
 
