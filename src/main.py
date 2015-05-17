@@ -150,7 +150,7 @@ def checkMails():
 						newMails = True
 						for part in mail.walk():
 							if part.get_content_type() == 'text/plain':
-								body = part.get_payload()
+								body = part.get_payload(
 								#print "got payload"
                                 # For each line in message execute instructions
 								for line in body.split('=0A=\r\n'):
