@@ -476,260 +476,267 @@ while True:
 	print "____________________________________________"
 	
 	checkMails()
-	try:
-		tagStart = readTagesBeginn()
-		print "Start des Tages: ", tagStart, "Uhr"
-	except ValueError:
-		errorTagesbeginn = True
-		print "   "
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-		print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 7 wurde angenommen."
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-		print "   "
-		tagStart = 7
-		print "Start des Tages: ", tagStart, "Uhr"
-		
-	try: 
-		nachtStart = readNachtBeginn()
-		print "Start der Nacht: ", nachtStart, "Uhr"
-	except ValueError:
-		errorNachtbeginn = True
-		print "   "
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-		print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 23 wurde angenommen."
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-		print "   "
-		nachtStart = 23
-		print "Start der Nacht: ", nachtStart, "Uhr"
-		
-	localtime = time.localtime(time.time()).tm_hour
-	print "Aktuelle Stunde: ", localtime
 	
-	if localtime >= tagStart and localtime < nachtStart:
-		print "It's day"
-		tag = True
-		nacht = False
+	for n in range (1,30):
+		try:
+			tagStart = readTagesBeginn()
+			print "Start des Tages: ", tagStart, "Uhr"
+		except ValueError:
+			errorTagesbeginn = True
+			print "   "
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+			print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 7 wurde angenommen."
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+			print "   "
+			tagStart = 7
+			print "Start des Tages: ", tagStart, "Uhr"
 		
-	else:
-		print "It's night"
-		tag = False
-		nacht = True	
-	print "---------------------------------------------"
+		try: 
+			nachtStart = readNachtBeginn()
+			print "Start der Nacht: ", nachtStart, "Uhr"
+		except ValueError:
+			errorNachtbeginn = True
+			print "   "
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+			print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 23 wurde angenommen."
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+			print "   "
+			nachtStart = 23
+			print "Start der Nacht: ", nachtStart, "Uhr"
+		
+		localtime = time.localtime(time.time()).tm_hour
+		print "Aktuelle Stunde: ", localtime
 	
-	mailSendTo = readAddress()
-	print "Ziel-Adresse: ", mailSendTo
+		if localtime >= tagStart and localtime < nachtStart:
+			print "It's day"
+			tag = True
+			nacht = False
+		
+		else:
+			print "It's night"
+			tag = False
+			nacht = True	
+		print "---------------------------------------------"
 	
-	try:
-		toleranzSchwelleTag = readSchwelleTag() #* 60 # Wert in der Mail muss groesser als 10 sein
-		print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
-	except ValueError:
-		errorSchwelleTag = True
-		print "   "
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-		print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe! Wert 10 wurde angenommen."
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-		print "   "
-		toleranzSchwelleTag = 10
-		print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
+		mailSendTo = readAddress()
+		print "Ziel-Adresse: ", mailSendTo
+	
+		try:
+			toleranzSchwelleTag = readSchwelleTag() #* 60 # Wert in der Mail muss groesser als 10 sein
+			print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
+		except ValueError:
+			errorSchwelleTag = True
+			print "   "
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+			print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe! Wert 10 wurde angenommen."
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+			print "   "
+			toleranzSchwelleTag = 10
+			print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
 		
 		
-	try:
-		toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
-		print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
-	except ValueError:
-		errorSchwelleNacht = True
-		print "   "
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-		print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe! Wert 15 wurde angenommen."
-		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-		print "   "
-		toleranzSchwelleNacht = 15
-		print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
-	print "---------------------------------------------"
+		try:
+			toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
+			print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
+		except ValueError:
+			errorSchwelleNacht = True
+			print "   "
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+			print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe! Wert 15 wurde angenommen."
+			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+			print "   "
+			toleranzSchwelleNacht = 15
+			print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
+		print "---------------------------------------------"
 
 
-	# send state with errors
-	if newMails == True:
-		print "new mails received"
+		# send state with errors
+		if newMails == True:
+			print "new mails received"
 		
-		if errorTagesbeginn == True:
-			errorTagesbeginn = False
-			tagStartFehler = "Fehlerhafte Eingabe ==> Tagesbeginn: " + readTagesBeginnString()
-		else:
-			tagStartFehler = " "
+			if errorTagesbeginn == True:
+				errorTagesbeginn = False
+				tagStartFehler = "Fehlerhafte Eingabe ==> Tagesbeginn: " + readTagesBeginnString()
+			else:
+				tagStartFehler = " "
 			
-		if errorNachtbeginn == True:
-			errorNachtbeginn = False
-			nachtStartFehler = "Fehlerhafte Eingabe ==> Nachtbeginn: " + readNachtBeginnString()
-		else:
-			nachtStartFehler = " "	
+			if errorNachtbeginn == True:
+				errorNachtbeginn = False
+				nachtStartFehler = "Fehlerhafte Eingabe ==> Nachtbeginn: " + readNachtBeginnString()
+			else:
+				nachtStartFehler = " "	
 			
-		if errorSchwelleNacht == True:
-			errorSchwelleNacht = False
-			toleranzSchwelleNachtFehler = "Fehlerhafte Eingabe ==> Schwelle Nacht: " + readSchwelleNachtString()	
-		else:
-			toleranzSchwelleNachtFehler = " "
+			if errorSchwelleNacht == True:
+				errorSchwelleNacht = False
+				toleranzSchwelleNachtFehler = "Fehlerhafte Eingabe ==> Schwelle Nacht: " + readSchwelleNachtString()	
+			else:
+				toleranzSchwelleNachtFehler = " "
 		
-		if errorSchwelleTag == True:
-			errorSchwelleTag = False
-			toleranzSchwelleTagFehler = "Fehlerhafte Eingabe ==> Schwelle Tag: " + readSchwelleTagString()	
-		else:
-			toleranzSchwelleTagFehler = " "
+			if errorSchwelleTag == True:
+				errorSchwelleTag = False
+				toleranzSchwelleTagFehler = "Fehlerhafte Eingabe ==> Schwelle Tag: " + readSchwelleTagString()	
+			else:
+				toleranzSchwelleTagFehler = " "
 		
-		newMails = False
-		if __name__ == '__main__':
-			print "Sende Status"
-			sendemail(mailSendFrom, mailSendTo, "Status!", "Ziel-Adresse: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
-	else:
-		print "no new mails received"
-	print "---------------------------------------------"
+			newMails = False
+			if __name__ == '__main__':
+				print "Sende Status"
+				sendemail(mailSendFrom, mailSendTo, "Status!", "Ziel-Adresse: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
+		else:
+			print "no new mails received"
+		print "---------------------------------------------"
 	
 	
-	# check: is activity
-	if os.path.isfile('/home/pi/projects/bda/data/time_zwave.pkl'):
-		# time stamp of file (time when last edited)
-		lastTimeZWave = os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
-		print "Time of last activity of ZWave: ", lastTimeZWave
+		# check: is activity
+		if os.path.isfile('/home/pi/projects/bda/data/time_zwave.pkl'):
+			# time stamp of file (time when last edited)
+			lastTimeZWave = os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
+			print "Time of last activity of ZWave: ", lastTimeZWave
 		
-	getHasChangedKitchen()
-	#global actual_time
-	if hasChangedKitchen == True:
-		#save timestamp of changed 
-		if closedKitchen == True:
-			lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
-		if openedKitchen == True:
-			lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
-	print "Time of last activity in kitchen:", lastTimeKitchen
+		getHasChangedKitchen()
+		#global actual_time
+		if hasChangedKitchen == True:
+			#save timestamp of changed 
+			if closedKitchen == True:
+				lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+			if openedKitchen == True:
+				lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+		print "Time of last activity in kitchen:", lastTimeKitchen
 	
-	getHasChangedEntrance()
-	#global actual_time
-	if hasChangedEntrance == True:
-		#save timestamp of changed 
-		if closedEntrance == True:
-			lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
-		if openedKitchen == True:
-			lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
-	print "Time of last activity in entrance:" , lastTimeEntrance
-	# ------------------------------------------------------------
+		getHasChangedEntrance()
+		#global actual_time
+		if hasChangedEntrance == True:
+			#save timestamp of changed 
+			if closedEntrance == True:
+				lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+			if openedEntrance == True:
+				lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+		print "Time of last activity in entrance:" , lastTimeEntrance
+		# ------------------------------------------------------------
 			
-#Find greatest time:
+	#Find greatest time:
 		
-	if lastTimeZWave >= lastTimeEntrance and lastTimeZWave >= lastTimeEntrance:
-		print "ZWave registered last activity"
-		lastTime = lastTimeZWave
+		if lastTimeZWave >= lastTimeEntrance and lastTimeZWave >= lastTimeEntrance:
+			print "ZWave registered last activity"
+			lastTime = lastTimeZWave
 	
-	if lastTimeKitchen >= lastTimeEntrance and lastTimeKitchen >= lastTimeZWave:
-		print "Kitchen registered last activity"
-		lastTime = lastTimeKitchen
+		if lastTimeKitchen >= lastTimeEntrance and lastTimeKitchen >= lastTimeZWave:
+			print "Kitchen registered last activity"
+			lastTime = lastTimeKitchen
 		
-	if lastTimeEntrance >= lastTimeKitchen and lastTimeEntrance >= lastTimeZWave:
-		print "Entrance registered last activity"
-		lastTime = lastTimeEntrance
+		if lastTimeEntrance >= lastTimeKitchen and lastTimeEntrance >= lastTimeZWave:
+			print "Entrance registered last activity"
+			lastTime = lastTimeEntrance
 		
-	if residentAbsent == False:
-		if tag == True:
-			# check Toleranz
-			if time.time() - lastTime >= toleranzSchwelleTag:
-				print "Toleranz-Schwelle Tag ueberschritten"
+		#if residentAbsent == False:
+		if GPIO.input(button) == True:
+			if tag == True:
+				# check Toleranz
+				if time.time() - lastTime >= toleranzSchwelleTag:
+					print "Toleranz-Schwelle Tag ueberschritten"
 			
-				for i in range (1,100):
-					GPIO.output(24,GPIO.HIGH)
+					for i in range (1,100):
+						GPIO.output(24,GPIO.HIGH)
 					
-					getHasChangedEntrance()
-					if hasChangedEntrance == True:
-					#save timestamp of changed 
-						if closedEntrance == True:
-							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
-						if openedEntrance == True:
-							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+						getHasChangedEntrance()
+						if hasChangedEntrance == True:
+						#save timestamp of changed 
+							if closedEntrance == True:
+								lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+							if openedEntrance == True:
+								lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
 					
-					getHasChangedKitchen()
-					if hasChangedKitchen == True:
-					#save timestamp of changed 
-						if closedKitchen == True:
-							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
-						if openedKitchen == True:
-							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+						getHasChangedKitchen()
+						if hasChangedKitchen == True:
+						#save timestamp of changed 
+							if closedKitchen == True:
+								lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+							if openedKitchen == True:
+								lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
 					
 					
-					# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
-						print time.time() - lastTimeKitchen
-						print time.time() - lastTimeEntrance
-						print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
-						print "Warnung quittiert Tag"
-						writeLastTime()
-						# !!!!!!!!!!!! noch ergaenzen mit write der anderen
-						break
-					print i
-					if i == 99:
-						warnung = True # Sende definitiv eine Warnung
-					time.sleep(0.1) 
+						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+						if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+							print time.time() - lastTimeKitchen
+							print time.time() - lastTimeEntrance
+							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
+							print "Warnung quittiert Tag"
+							writeLastTime()
+							# !!!!!!!!!!!! noch ergaenzen mit write der anderen
+							break
+						print i
+						if i == 99:
+							warnung = True # Sende definitiv eine Warnung
+						time.sleep(0.1) 
 			
-				GPIO.output(24,GPIO.LOW) # Alarm ausschalten
-			
-				if warnung == True:
 					GPIO.output(24,GPIO.LOW) # Alarm ausschalten
-					writeLastTime()
-					warnung = False 
-					if __name__ == '__main__':
-						print "Sende Warnung"
-						GPIO.output(25,GPIO.HIGH)
-						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-						time.sleep(1)
-						GPIO.output(25,GPIO.LOW)
-	
-	if residentAbsent == False:
-		if nacht == True:
-			if time.time() - lastTime >= toleranzSchwelleNacht:
-				print "Toleranz-Schwelle Nacht ueberschritten"
 			
-				for i in range (1,100):
-					GPIO.output(24,GPIO.HIGH)
-					
-					getHasChangedEntrance()
-					if hasChangedEntrance == True:
-					#save timestamp of changed 
-						if closedEntrance == True:
-							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
-						if openedEntrance == True:
-							lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
-					
-					getHasChangedKitchen()
-					if hasChangedKitchen == True:
-					#save timestamp of changed 
-						if closedKitchen == True:
-							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
-						if openedKitchen == True:
-							lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
-					
-					
-					# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-					if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
-						print time.time() - lastTimeKitchen
-						print time.time() - lastTimeEntrance
-						print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
-						print "Warnung quittiert nacht"
+					if warnung == True:
+						GPIO.output(24,GPIO.LOW) # Alarm ausschalten
 						writeLastTime()
-						break
-					print i
-					if i == 99:
-						warnung = True # Sende definitiv eine Warnung
-					time.sleep(0.1) 
+						warnung = False 
+						if __name__ == '__main__':
+							print "Sende Warnung"
+							GPIO.output(25,GPIO.HIGH)
+							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+							time.sleep(1)
+							GPIO.output(25,GPIO.LOW)
+	
+		if residentAbsent == False:
+			if nacht == True:
+				if time.time() - lastTime >= toleranzSchwelleNacht:
+					print "Toleranz-Schwelle Nacht ueberschritten"
 			
-				GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+					for i in range (1,100):
+						GPIO.output(24,GPIO.HIGH)
+					
+						getHasChangedEntrance()
+						if hasChangedEntrance == True:
+						#save timestamp of changed 
+							if closedEntrance == True:
+								lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
+							if openedEntrance == True:
+								lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
+					
+						getHasChangedKitchen()
+						if hasChangedKitchen == True:
+						#save timestamp of changed 
+							if closedKitchen == True:
+								lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
+							if openedKitchen == True:
+								lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
+					
+
+						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+						if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+							print time.time() - lastTimeKitchen
+							print time.time() - lastTimeEntrance
+							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
+							print "Warnung quittiert nacht"
+							writeLastTime()
+							break
+						print i
+						if i == 99:
+							warnung = True # Sende definitiv eine Warnung
+						time.sleep(0.1) 
 			
-				if warnung == True:
 					GPIO.output(24,GPIO.LOW) # Alarm ausschalten
-					writeLastTime()
-					warnung = False 
-					if __name__ == '__main__':
-						print "Sende Warnung"
-						GPIO.output(25,GPIO.HIGH)
-						sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
-						time.sleep(1)
-						GPIO.output(25,GPIO.LOW)
-	time.sleep(20) 
+			
+					if warnung == True:
+						GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+						writeLastTime()
+						warnung = False 
+						if __name__ == '__main__':
+							print "Sende Warnung"
+							GPIO.output(25,GPIO.HIGH)
+							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+							time.sleep(1)
+							GPIO.output(25,GPIO.LOW)
+		print n					
+		time.sleep(1)
+		
+						
+	time.sleep(1) 
 		
 
 
