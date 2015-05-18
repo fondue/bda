@@ -28,11 +28,11 @@ GPIO.setup(24,GPIO.OUT) # for LED
 GPIO.setup(25,GPIO.OUT) # for LED
 #GPIO.setup(8,GPIO.OUT) # not needed, because it is switched directly from fhem with set_alarm_light.py
 GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
-#shutdownSwitch = 10
+shutdownSwitch = 10
 GPIO.setup(9,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
-button = 9
-GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for residentAbsent
-residentAbsent = 10 #war 11!!!
+quittieren_button = 9
+GPIO.setup(11,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for residentAbsent
+residentAbsent = 11
 
 # for change detection
 openOldKitchen = False
@@ -116,10 +116,19 @@ mailDebug = False
 warnung = False
 absent_bool = False #for enabling system when resident comes home
 absent_count = False #for only enter the for loop once
+quittieren = False
 
 #-------------------------------------------------------------------
 
 #Interrupts GPIO
+
+def quittieren(pin):
+	print "quittiert"
+	global quittieren
+	quittieren = True
+	time.sleep(1)	
+
+GPIO.add_event_detect(quittieren_button, GPIO.FALLING, callback=quittieren,bouncetime=500)
 
 # Shutdown switch
 def shutdown(pin):
@@ -127,8 +136,9 @@ def shutdown(pin):
 	#os.system("sudo shutdown -h now")
 	time.sleep(3)	
 
-#GPIO.add_event_detect(shutdownSwitch, GPIO.FALLING, callback=shutdown,bouncetime=500)
+GPIO.add_event_detect(shutdownSwitch, GPIO.FALLING, callback=shutdown,bouncetime=500)
 
+# Resident absent
 def absent(pin):
 	print "Absent"
 	global absent_bool
@@ -278,7 +288,7 @@ def readSchwelleTag():
 	# close the file
 	f.close()
 	
-def readSchwelleTagString():
+def readSchwelleTagString():# String, to send the error back to the user
 	f = open('/home/pi/projects/bda/data/schwelle_tag.txt')
 	while True:
 		line = f.readline()
@@ -309,7 +319,7 @@ def readSchwelleNacht():
 	f.close()
 
 # For error case
-def readSchwelleNachtString():
+def readSchwelleNachtString():# String, to send the error back to the user
 	f = open('/home/pi/projects/bda/data/schwelle_nacht.txt')
 	while True:
 		line = f.readline()
@@ -354,7 +364,7 @@ def readTagesBeginn():
 	# close the file
 	f.close()
 	
-def readTagesBeginnString():
+def readTagesBeginnString(): # String, to send the error back to the user
 	f = open('/home/pi/projects/bda/data/tages_beginn.txt')
 	while True:
 		line = f.readline()
@@ -384,7 +394,7 @@ def readNachtBeginn():
 	# close the file
 	f.close()
 	
-def readNachtBeginnString():
+def readNachtBeginnString(): # String, to send the error back to the user
 	f = open('/home/pi/projects/bda/data/nacht_beginn.txt')
 	while True:
 		line = f.readline()
@@ -399,7 +409,7 @@ def readNachtBeginnString():
 	# close the file
 	f.close()
 	
-            
+# to initialize the konfiguration values
 def writeOpenKitchen():
     with open('/home/pi/projects/bda/data/time_open_kitchen.pkl','wb') as f:
 		value = time.time()
@@ -411,7 +421,6 @@ def writeClosedKitchen():
 		value = time.time()
 		print "closed kitchen: ", value
 		pickle.dump(value,f)
-		
             
 def writeOpenEntrance():
     with open('/home/pi/projects/bda/data/time_open_entrance.pkl','wb') as f:
@@ -424,7 +433,9 @@ def writeClosedEntrance():
 		value = time.time()
 		print "closed entrance", value
 		pickle.dump(value,f)
+#--------------------------------------------------------------
 		
+# to detect a change in the state of the EnOcean sensor kitchen
 def getHasChangedKitchen():
 	
 	time_open = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
@@ -458,6 +469,7 @@ def getHasChangedKitchen():
 	
 	return hasChangedKitchen
 	
+# to detect a change in the state of the EnOcean sensor entrance
 def getHasChangedEntrance():
 	
 	time_open = os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')
@@ -731,7 +743,8 @@ while True:
 					
 					
 						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-						if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+						if ((quittieren == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+							quittieren = False
 							print time.time() - lastTimeKitchen
 							print time.time() - lastTimeEntrance
 							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
@@ -784,7 +797,8 @@ while True:
 					
 
 						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-						if ((GPIO.input(button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+						if ((quittieren == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
+							quittieren = False
 							print time.time() - lastTimeKitchen
 							print time.time() - lastTimeEntrance
 							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
