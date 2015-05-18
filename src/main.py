@@ -26,13 +26,13 @@ print "++++++++++++++++++++++++"
 GPIO.setwarnings(False)
 GPIO.setup(24,GPIO.OUT) # for LED
 GPIO.setup(25,GPIO.OUT) # for LED
+#GPIO.setup(8,GPIO.OUT) # not needed, because it is switched directly from fhem with set_alarm_light.py
 GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
-shutdownSwitch = 10
+#shutdownSwitch = 10
 GPIO.setup(9,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
 button = 9
-GPIO.setup(11,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for residentAbsent
-residentAbsent = 11
-
+GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for residentAbsent
+residentAbsent = 10 #war 11!!!
 
 # for change detection
 openOldKitchen = False
@@ -50,10 +50,41 @@ hasChangedEntrance = False
 lastTimeEntrance = time.time()
 #------------------------
 
+# for errors in Mail Text
 errorTagesbeginn = False
 errorNachtbeginn = False
 errorSchwelleNacht = False
 errorSchwelleTag = False
+#-----------------------
+
+#Init Konfigurationswerte
+addressInit = "bda15-inat@ihomelab-lists.ch"
+with open("/home/pi/projects/bda/data/address.txt","w") as f:			
+	f.write(addressInit)
+	f.close()
+
+#global schwelleTagInit
+schwelleTagInit = "60"
+with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:			
+	f.write(schwelleTagInit)
+	f.close()
+
+schwelleNachtInit = "60"
+with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:			
+	f.write(schwelleNachtInit)
+	f.close()
+	
+#global tagesBeginnInit	
+tagStartInit = "8"
+with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:			
+	f.write(tagStartInit)
+	f.close()
+	
+nachtStartInit = "22"
+with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:			
+	f.write(nachtStartInit)
+	f.close()
+#--------------------------------	
 
 
 # Receive mail
@@ -79,26 +110,37 @@ mailSendFrom = mailLogin
 mailSendTo = 'dominik.imhof@stud.hslu.ch'
 mailTLS = True
 mailDebug = False
-
 #------------------------------------------------------------------
 
 # toleranzSchwelle = 10
 warnung = False
-residentAbsent = False
+absent_bool = False #for enabling system when resident comes home
+absent_count = False #for only enter the for loop once
 
 #-------------------------------------------------------------------
+
+#Interrupts GPIO
 
 # Shutdown switch
 def shutdown(pin):
 	print "shutdown"
-	os.system("sudo shutdown -h now")
-	time.sleep(5)	
+	#os.system("sudo shutdown -h now")
+	time.sleep(3)	
 
-GPIO.add_event_detect(shutdownSwitch, GPIO.RISING, callback=shutdown)
+#GPIO.add_event_detect(shutdownSwitch, GPIO.FALLING, callback=shutdown,bouncetime=500)
 
+def absent(pin):
+	print "Absent"
+	global absent_bool
+	global absent_count
+	absent_bool = True
+	absent_count = True
+	time.sleep(1)
+
+GPIO.add_event_detect(residentAbsent, GPIO.FALLING, callback=absent,bouncetime=1000)
+#--------------------------------------------------------------------
 
 # Send Mail
-
 def sendemail(from_addr, to_addr, subject, message):
     try:
         header = 'From: %s\n' % from_addr
@@ -150,14 +192,14 @@ def checkMails():
 						newMails = True
 						for part in mail.walk():
 							if part.get_content_type() == 'text/plain':
-								body = part.get_payload(
-								#print "got payload"
+								body = part.get_payload()
+								# print "got payload"
                                 # For each line in message execute instructions
 								for line in body.split('=0A=\r\n'):
 									if line != " ":
 										#print "lese..."
-										if line[0:5] == "Mail:":
-											address = line[6:len(line)]
+										if line[0:7] == "E-Mail:":
+											address = line[8:len(line)]
 											print "Adresse aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/address.txt","w") as f:
 												f.write(address)
@@ -191,16 +233,9 @@ def checkMails():
 												f.write(nachtbeginn)
 												f.close()
 										
-										if line[0:6] == "Status":
-											nachtbeginn = line[13:len(line)]
-											print "Nachtbeginn aus der Mail gelesen"
-											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
-												f.write(nachtbeginn)
-												f.close()
-										
 										
                                        
-            time.sleep(0.2)
+            #time.sleep(0.2)
     except Exception, e1:
         print("Error...: " + str(e1))
     except (KeyboardInterrupt, SystemExit):
@@ -456,7 +491,7 @@ def getHasChangedEntrance():
 	
 	return hasChangedEntrance
 	
-# Simulates an activity at the beginning of the programm
+# Simulates an activity at the beginning of the programm. For initialization.
 writeOpenKitchen()
 writeClosedKitchen()
 writeOpenEntrance()
@@ -465,21 +500,39 @@ lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitch
 lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
 # ------------------------------------------------------
 
-def sendError():
-	if errorSchwelleNacht == True:
-		errorSchwelleNacht = False
-		toleranzSchwelleNachtFehler = readSchwelleNachtString()
-		return "Error: " + toleranzSchwelleNachtFehler 
+#def sendError():
+#	if errorSchwelleNacht == True:
+#		errorSchwelleNacht = False
+#		toleranzSchwelleNachtFehler = readSchwelleNachtString()
+#		return "Error: " + toleranzSchwelleNachtFehler 
 
 
 while True:
 	print "-------------------NEW-CYCLE----------------"
 	print "____________________________________________"
 	
+
+		
 	checkMails() # checkMails() called every 30 seconds, because of the following for loop
 	
 	# check states of sensors every second for 30 times, then checkMails()
+	# check every second, that short changes of the EnOcean sensors cant be detected also.
+	# checkMails dont need to bee checked every second.
 	for n in range (1,31):
+		
+		# taster residentAbsent has been pressed.
+		# system is going to sleep now.
+		# with this loop it creates time for the resident to leave the house.
+		# During this time, no activity wakes up the system.
+		# after this time, every activity wakes the system up
+		if absent_bool == True and absent_count == True:
+			
+			for i in range (1,20):
+				print "i: ",i
+				time.sleep(1)
+				absent_count = False
+		#---------------------------------------
+		
 		try:
 			tagStart = readTagesBeginn()
 			print "Start des Tages: ", tagStart, "Uhr"
@@ -490,7 +543,7 @@ while True:
 			print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 7 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			tagStart = 7
+			tagStart = tagStartInit
 			print "Start des Tages: ", tagStart, "Uhr"
 		
 		try: 
@@ -503,9 +556,10 @@ while True:
 			print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 23 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			nachtStart = 23
+			nachtStart = nachtStartInit
 			print "Start der Nacht: ", nachtStart, "Uhr"
 		
+	# check day/night
 		localtime = time.localtime(time.time()).tm_hour
 		print "Aktuelle Stunde: ", localtime
 	
@@ -533,7 +587,7 @@ while True:
 			print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe! Wert 10 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			toleranzSchwelleTag = 10
+			toleranzSchwelleTag = schwelleTagInit
 			print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
 		
 		
@@ -547,7 +601,7 @@ while True:
 			print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe! Wert 15 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			toleranzSchwelleNacht = 15
+			toleranzSchwelleNacht = schwelleNachtInit
 			print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
 		print "---------------------------------------------"
 
@@ -583,7 +637,7 @@ while True:
 			newMails = False
 			if __name__ == '__main__':
 				print "Sende Status"
-				sendemail(mailSendFrom, mailSendTo, "Status!", "Ziel-Adresse: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
+				sendemail(mailSendFrom, mailSendTo, "Status!", "E-Mail: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
 		else:
 			print "no new mails received"
 		print "---------------------------------------------"
@@ -617,7 +671,6 @@ while True:
 		# ------------------------------------------------------------
 			
 	#Find greatest time:
-		
 		if lastTimeZWave >= lastTimeEntrance and lastTimeZWave >= lastTimeEntrance:
 			print "ZWave registered last activity"
 			lastTime = lastTimeZWave
@@ -629,10 +682,30 @@ while True:
 		if lastTimeEntrance >= lastTimeKitchen and lastTimeEntrance >= lastTimeZWave:
 			print "Entrance registered last activity"
 			lastTime = lastTimeEntrance
+	#------------------------
+	
 		
-		if residentAbsent == False: #!!!!
+		# Check resident has come home and wake up the system:
+		if hasChangedEntrance == True:
+			if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')) < 5:
+				# this time has to be greater than the maximal time of one cycle of the whole while loop
+				# whithout the for loop that makes the system go sleeping.
+				absent_bool = False
+			if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')) < 5:
+				absent_bool = False
+		if hasChangedKitchen == True:
+			if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')) < 5:
+				absent_bool = False
+			if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')) < 5:
+				absent_bool = False
+		if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5:
+			absent_bool = False
+		#-------------------------------
+		
+		if absent_bool == False: #!!!!
 		#if GPIO.input(button) == True:
 			if tag == True:
+				print "CHECK TOLERANZ"
 				# check Toleranz
 				if time.time() - lastTime >= toleranzSchwelleTag:
 					print "Toleranz-Schwelle Tag ueberschritten"
@@ -684,8 +757,9 @@ while True:
 							time.sleep(1)
 							GPIO.output(25,GPIO.LOW)
 	
-		if residentAbsent == False:
+		if absent_bool == False:
 			if nacht == True:
+				print "CHECK TOLERANZ"
 				if time.time() - lastTime >= toleranzSchwelleNacht:
 					print "Toleranz-Schwelle Nacht ueberschritten"
 			
