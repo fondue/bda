@@ -64,25 +64,29 @@ with open("/home/pi/projects/bda/data/address.txt","w") as f:
 	f.close()
 
 #global schwelleTagInit
-schwelleTagInit = "60"
+schwelleTagInitSting = "60"
+schwelleTagInitInt = 60
 with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:			
-	f.write(schwelleTagInit)
+	f.write(schwelleTagInitSting)
 	f.close()
 
-schwelleNachtInit = "60"
+schwelleNachtInitSting = "60"
+schwelleNachtInitInt = 60
 with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:			
-	f.write(schwelleNachtInit)
+	f.write(schwelleNachtInitSting)
 	f.close()
 	
 #global tagesBeginnInit	
-tagStartInit = "8"
+tagStartInitString = "8"
+tagStartInitInt = 8
 with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:			
-	f.write(tagStartInit)
+	f.write(tagStartInitString)
 	f.close()
 	
-nachtStartInit = "22"
+nachtStartInitString = "22"
+nachtStartInitInt = 22
 with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:			
-	f.write(nachtStartInit)
+	f.write(nachtStartInitString)
 	f.close()
 #--------------------------------	
 
@@ -116,19 +120,10 @@ mailDebug = False
 warnung = False
 absent_bool = False #for enabling system when resident comes home
 absent_count = False #for only enter the for loop once
-quittieren = False
 
 #-------------------------------------------------------------------
 
 #Interrupts GPIO
-
-def quittieren(pin):
-	print "quittiert"
-	global quittieren
-	quittieren = True
-	time.sleep(1)	
-
-GPIO.add_event_detect(quittieren_button, GPIO.FALLING, callback=quittieren,bouncetime=500)
 
 # Shutdown switch
 def shutdown(pin):
@@ -555,7 +550,7 @@ while True:
 			print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 7 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			tagStart = tagStartInit
+			tagStart = tagStartInitInt
 			print "Start des Tages: ", tagStart, "Uhr"
 		
 		try: 
@@ -568,7 +563,7 @@ while True:
 			print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 23 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			nachtStart = nachtStartInit
+			nachtStart = nachtStartInitInt
 			print "Start der Nacht: ", nachtStart, "Uhr"
 		
 	# check day/night
@@ -599,7 +594,7 @@ while True:
 			print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe! Wert 10 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			toleranzSchwelleTag = schwelleTagInit
+			toleranzSchwelleTag = schwelleTagInitInt
 			print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
 		
 		
@@ -613,7 +608,7 @@ while True:
 			print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe! Wert 15 wurde angenommen."
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			toleranzSchwelleNacht = schwelleNachtInit
+			toleranzSchwelleNacht = schwelleNachtInitInt
 			print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
 		print "---------------------------------------------"
 
@@ -743,8 +738,7 @@ while True:
 					
 					
 						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-						if ((quittieren == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
-							quittieren = False
+						if ((GPIO.input(quittieren_button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
 							print time.time() - lastTimeKitchen
 							print time.time() - lastTimeEntrance
 							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
@@ -797,8 +791,7 @@ while True:
 					
 
 						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
-						if ((quittieren == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
-							quittieren = False
+						if ((GPIO.input(quittieren_button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
 							print time.time() - lastTimeKitchen
 							print time.time() - lastTimeEntrance
 							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
