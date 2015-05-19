@@ -26,7 +26,7 @@ print "++++++++++++++++++++++++"
 GPIO.setwarnings(False)
 GPIO.setup(24,GPIO.OUT) # for LED
 GPIO.setup(25,GPIO.OUT) # for LED
-#GPIO.setup(8,GPIO.OUT) # not needed, because it is switched directly from fhem with set_alarm_light.py
+GPIO.setup(8,GPIO.OUT) # not needed, because it is switched directly from fhem with set_alarm_light.py
 GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
 shutdownSwitch = 10
 GPIO.setup(9,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
@@ -48,6 +48,7 @@ openedEntrance = False
 closedEntrance = True
 hasChangedEntrance = False
 lastTimeEntrance = time.time()
+
 #------------------------
 
 # for errors in Mail Text
@@ -140,6 +141,7 @@ def absent(pin):
 	global absent_count
 	absent_bool = True
 	absent_count = True
+	GPIO.output(25,GPIO.LOW)
 	time.sleep(1)
 
 GPIO.add_event_detect(residentAbsent, GPIO.FALLING, callback=absent,bouncetime=1000)
@@ -527,19 +529,31 @@ while True:
 	# checkMails dont need to bee checked every second.
 	for n in range (1,31):
 		
+			
 		# taster residentAbsent has been pressed.
 		# system is going to sleep now.
 		# with this loop it creates time for the resident to leave the house.
 		# During this time, no activity wakes up the system.
 		# after this time, every activity wakes the system up
+		
+		if (hasChangedEntrance == True) and (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')) < 5:
+			GPIO.output(25,GPIO.HIGH)
+			print "HAUSTUERE OPEN: ALARM"
+			
+		if (hasChangedEntrance == True) and (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')) < 5:
+			GPIO.output(25,GPIO.LOW)
+			print "HAUSTUERE CLOSED: ALARM OVER"
+			
 		if absent_bool == True and absent_count == True:
 			
 			for i in range (1,20):
 				print "i: ",i
 				time.sleep(1)
+				#absent_bool = True
 				absent_count = False
 		#---------------------------------------
-		
+	
+			
 		try:
 			tagStart = readTagesBeginn()
 			print "Start des Tages: ", tagStart, "Uhr"
@@ -693,6 +707,9 @@ while True:
 	
 		
 		# Check resident has come home and wake up the system:
+		#getHasChangedEntrance()
+		#getHasChangedKitchen()
+		
 		if hasChangedEntrance == True:
 			if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')) < 5:
 				# this time has to be greater than the maximal time of one cycle of the whole while loop
