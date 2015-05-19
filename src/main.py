@@ -63,6 +63,9 @@ addressInit = "bda15-inat@ihomelab-lists.ch"
 with open("/home/pi/projects/bda/data/address.txt","w") as f:			
 	f.write(addressInit)
 	f.close()
+with open("/home/pi/projects/bda/data/address_old.txt","w") as f:			
+	f.write(addressInit)
+	f.close()
 
 #global schwelleTagInit
 schwelleTagInitSting = "60"
@@ -70,10 +73,16 @@ schwelleTagInitInt = 60
 with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:			
 	f.write(schwelleTagInitSting)
 	f.close()
+with open("/home/pi/projects/bda/data/schwelle_tag_old.txt","w") as f:			
+	f.write(schwelleTagInitSting)
+	f.close()	
 
 schwelleNachtInitSting = "60"
 schwelleNachtInitInt = 60
 with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:			
+	f.write(schwelleNachtInitSting)
+	f.close()
+with open("/home/pi/projects/bda/data/schwelle_nacht_old.txt","w") as f:			
 	f.write(schwelleNachtInitSting)
 	f.close()
 	
@@ -83,10 +92,16 @@ tagStartInitInt = 8
 with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:			
 	f.write(tagStartInitString)
 	f.close()
-	
+with open("/home/pi/projects/bda/data/tages_beginn_old.txt","w") as f:			
+	f.write(tagStartInitString)
+	f.close()
+
 nachtStartInitString = "22"
 nachtStartInitInt = 22
 with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:			
+	f.write(nachtStartInitString)
+	f.close()
+with open("/home/pi/projects/bda/data/nacht_beginn_old.txt","w") as f:			
 	f.write(nachtStartInitString)
 	f.close()
 #--------------------------------	
@@ -139,8 +154,24 @@ def absent(pin):
 	print "Absent"
 	global absent_bool
 	global absent_count
-	absent_bool = True
-	absent_count = True
+	absent_bool = True # for creating time for the resident to leave the house
+	absent_count = True # for creating time for the resident to leave the house
+	# For blink LED when absent button is pressed. So the resident is informed that 
+	# the system is going to sleep.
+	GPIO.output(25,GPIO.HIGH)
+	time.sleep(0.2)
+	GPIO.output(25,GPIO.LOW)
+	time.sleep(0.2)
+	GPIO.output(25,GPIO.HIGH)
+	time.sleep(0.2)
+	GPIO.output(25,GPIO.LOW)
+	time.sleep(0.2)
+	GPIO.output(25,GPIO.HIGH)
+	time.sleep(0.2)
+	GPIO.output(25,GPIO.LOW)
+	time.sleep(0.2)
+	GPIO.output(25,GPIO.HIGH)
+	time.sleep(0.2)
 	GPIO.output(25,GPIO.LOW)
 	time.sleep(1)
 
@@ -211,6 +242,7 @@ def checkMails():
 											with open("/home/pi/projects/bda/data/address.txt","w") as f:
 												f.write(address)
 												f.close()
+											continue
 												
 										if line[0:13] == "Schwelle Tag:":
 											schwelleTag = line[14:len(line)]
@@ -218,6 +250,7 @@ def checkMails():
 											with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:
 												f.write(schwelleTag)
 												#f.close()
+											continue
 										
 										if line[0:15] == "Schwelle Nacht:":
 											schwelleNacht = line[16:len(line)]
@@ -225,13 +258,15 @@ def checkMails():
 											with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:
 												f.write(schwelleNacht)
 												f.close()
+											continue
 										
 										if line[0:12] == "Tagesbeginn:":
 											tagesbeginn = line[13:len(line)]
 											print "Tagesbeginn aus der Mail gelesen"
 											with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:
 												f.write(tagesbeginn)
-												f.close()		
+												f.close()	
+											continue	
 										
 										if line[0:12] == "Nachtbeginn:":
 											nachtbeginn = line[13:len(line)]
@@ -239,6 +274,7 @@ def checkMails():
 											with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:
 												f.write(nachtbeginn)
 												f.close()
+											continue
 										
 										
                                        
@@ -285,6 +321,22 @@ def readSchwelleTag():
 	# close the file
 	f.close()
 	
+# In case of error, old value will be stored in the konfigfile
+def readSchwelleTagOld():
+	f = open('/home/pi/projects/bda/data/schwelle_tag_old.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
+	
 def readSchwelleTagString():# String, to send the error back to the user
 	f = open('/home/pi/projects/bda/data/schwelle_tag.txt')
 	while True:
@@ -302,6 +354,21 @@ def readSchwelleTagString():# String, to send the error back to the user
 
 def readSchwelleNacht():
 	f = open('/home/pi/projects/bda/data/schwelle_nacht.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
+	
+def readSchwelleNachtOld():
+	f = open('/home/pi/projects/bda/data/schwelle_nacht_old.txt')
 	while True:
 		line = f.readline()
 		# Zero length indicates EOF
@@ -361,6 +428,21 @@ def readTagesBeginn():
 	# close the file
 	f.close()
 	
+def readTagesBeginnOld():
+	f = open('/home/pi/projects/bda/data/tages_beginn_old.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
+
 def readTagesBeginnString(): # String, to send the error back to the user
 	f = open('/home/pi/projects/bda/data/tages_beginn.txt')
 	while True:
@@ -378,6 +460,21 @@ def readTagesBeginnString(): # String, to send the error back to the user
 	
 def readNachtBeginn():
 	f = open('/home/pi/projects/bda/data/nacht_beginn.txt')
+	while True:
+		line = f.readline()
+		# Zero length indicates EOF
+		if len(line) == 0:
+			break
+		# The `line` already has a newline
+		# at the end of each line
+		# since it is reading from a file.
+		#print line
+		return int(line)
+	# close the file
+	f.close()
+	
+def readNachtBeginnOld():
+	f = open('/home/pi/projects/bda/data/nacht_beginn_old.txt')
 	while True:
 		line = f.readline()
 		# Zero length indicates EOF
@@ -530,20 +627,21 @@ while True:
 	for n in range (1,31):
 		
 			
+		# starts LED when door of the house has opened. Clears LED when door is closed.
+		# EnOcean Sensor entrance
+		if (hasChangedEntrance == True) and (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')) < 5:
+			GPIO.output(8,GPIO.HIGH)
+			print "Door open: Hint activated!!!"
+			
+		if (hasChangedEntrance == True) and (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')) < 5:
+			GPIO.output(8,GPIO.LOW)
+			print "Door closed: Hint finished"
+			
 		# taster residentAbsent has been pressed.
 		# system is going to sleep now.
 		# with this loop it creates time for the resident to leave the house.
 		# During this time, no activity wakes up the system.
 		# after this time, every activity wakes the system up
-		
-		if (hasChangedEntrance == True) and (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_open_entrance.pkl')) < 5:
-			GPIO.output(25,GPIO.HIGH)
-			print "HAUSTUERE OPEN: ALARM"
-			
-		if (hasChangedEntrance == True) and (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')) < 5:
-			GPIO.output(25,GPIO.LOW)
-			print "HAUSTUERE CLOSED: ALARM OVER"
-			
 		if absent_bool == True and absent_count == True:
 			
 			for i in range (1,20):
@@ -556,28 +654,36 @@ while True:
 			
 		try:
 			tagStart = readTagesBeginn()
+			tagStartStr = str(tagStart)
+			with open("/home/pi/projects/bda/data/tages_beginn_old.txt","w") as f:			
+				f.write(tagStartStr)
+				f.close()
 			print "Start des Tages: ", tagStart, "Uhr"
 		except ValueError:
 			errorTagesbeginn = True
 			print "   "
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-			print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 7 wurde angenommen."
+			print "ERROR: Tagesbeginn konnte nicht gelesen werden. \nFalsche Eingabe!"
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			tagStart = tagStartInitInt
+			tagStart = readTagesBeginnOld() # in case of error, old value will be stored
 			print "Start des Tages: ", tagStart, "Uhr"
 		
 		try: 
 			nachtStart = readNachtBeginn()
+			nachtStartStr = str(nachtStart)
+			with open("/home/pi/projects/bda/data/nacht_beginn_old.txt","w") as f:			
+				f.write(nachtStartStr)
+				f.close()
 			print "Start der Nacht: ", nachtStart, "Uhr"
 		except ValueError:
 			errorNachtbeginn = True
 			print "   "
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-			print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe! Wert 23 wurde angenommen."
+			print "ERROR: Nachtbeginn konnte nicht gelesen werden. \nFalsche Eingabe!"
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			nachtStart = nachtStartInitInt
+			nachtStart = readNachtBeginnOld()
 			print "Start der Nacht: ", nachtStart, "Uhr"
 		
 	# check day/night
@@ -599,30 +705,38 @@ while True:
 		print "Ziel-Adresse: ", mailSendTo
 	
 		try:
-			toleranzSchwelleTag = readSchwelleTag() #* 60 # Wert in der Mail muss groesser als 10 sein
+			toleranzSchwelleTag = readSchwelleTag() # * 60
+			toleranzSchwelleTagStr = str(toleranzSchwelleTag)
+			with open("/home/pi/projects/bda/data/schwelle_tag_old.txt","w") as f:			
+				f.write(toleranzSchwelleTagStr)
+				f.close()
 			print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
 		except ValueError:
 			errorSchwelleTag = True
 			print "   "
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-			print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe! Wert 10 wurde angenommen."
+			print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe!"
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			toleranzSchwelleTag = schwelleTagInitInt
+			toleranzSchwelleTag = readSchwelleTagOld()
 			print "Toleranz-Schwelle Tag: ", toleranzSchwelleTag, "Sekunden"
 		
 		
 		try:
-			toleranzSchwelleNacht = readSchwelleNacht() #* 60 # Wert in der Mail muss groesser als 10 sein
+			toleranzSchwelleNacht = readSchwelleNacht() # * 60 
+			toleranzSchwelleNachtStr = str(toleranzSchwelleNacht)
+			with open("/home/pi/projects/bda/data/schwelle_nacht_old.txt","w") as f:			
+				f.write(toleranzSchwelleNachtStr)
+				f.close()
 			print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
 		except ValueError:
 			errorSchwelleNacht = True
 			print "   "
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-			print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe! Wert 15 wurde angenommen."
+			print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe!"
 			print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			print "   "
-			toleranzSchwelleNacht = schwelleNachtInitInt
+			toleranzSchwelleNacht = readSchwelleNachtOld()
 			print "Toleranz-Schwelle Nacht: ", toleranzSchwelleNacht, "Sekunden"
 		print "---------------------------------------------"
 
@@ -634,28 +748,45 @@ while True:
 			if errorTagesbeginn == True:
 				errorTagesbeginn = False
 				tagStartFehler = "Fehlerhafte Eingabe ==> Tagesbeginn: " + readTagesBeginnString()
+				tagStartStr = str(tagStart)
+				with open("/home/pi/projects/bda/data/tages_beginn.txt","w") as f:			
+					f.write(tagStartStr)
+					f.close()
 			else:
 				tagStartFehler = " "
 			
 			if errorNachtbeginn == True:
 				errorNachtbeginn = False
 				nachtStartFehler = "Fehlerhafte Eingabe ==> Nachtbeginn: " + readNachtBeginnString()
+				nachtStartStr = str(nachtStart)
+				with open("/home/pi/projects/bda/data/nacht_beginn.txt","w") as f:			
+					f.write(nachtStartStr)
+					f.close()
 			else:
 				nachtStartFehler = " "	
 			
 			if errorSchwelleNacht == True:
 				errorSchwelleNacht = False
 				toleranzSchwelleNachtFehler = "Fehlerhafte Eingabe ==> Schwelle Nacht: " + readSchwelleNachtString()	
+				toleranzSchwelleNachtStr = str(toleranzSchwelleNacht)
+				with open("/home/pi/projects/bda/data/schwelle_nacht.txt","w") as f:			
+					f.write(toleranzSchwelleNachtStr)
+					f.close()
 			else:
 				toleranzSchwelleNachtFehler = " "
 		
 			if errorSchwelleTag == True:
 				errorSchwelleTag = False
 				toleranzSchwelleTagFehler = "Fehlerhafte Eingabe ==> Schwelle Tag: " + readSchwelleTagString()	
+				toleranzSchwelleTagStr = str(toleranzSchwelleTag)
+				with open("/home/pi/projects/bda/data/schwelle_tag.txt","w") as f:			
+					f.write(toleranzSchwelleTagStr)
+					f.close()
 			else:
 				toleranzSchwelleTagFehler = " "
 		
 			newMails = False
+			
 			if __name__ == '__main__':
 				print "Sende Status"
 				sendemail(mailSendFrom, mailSendTo, "Status!", "E-Mail: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
