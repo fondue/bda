@@ -24,9 +24,9 @@ print "++++++++++++++++++++++++"
 print "+ Welcome to your home +"
 print "++++++++++++++++++++++++"
 GPIO.setwarnings(False)
-GPIO.setup(24,GPIO.OUT) # for LED
-GPIO.setup(25,GPIO.OUT) # for LED
-GPIO.setup(8,GPIO.OUT) # not needed, because it is switched directly from fhem with set_alarm_light.py
+GPIO.setup(24,GPIO.OUT) # for LED quitt
+GPIO.setup(25,GPIO.OUT) # for LED warning
+GPIO.setup(8,GPIO.OUT) # for LED alarm
 GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
 shutdownSwitch = 10
 GPIO.setup(9,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
@@ -157,22 +157,22 @@ def absent(pin):
 	absent_bool = True # for creating time for the resident to leave the house
 	absent_count = True # for creating time for the resident to leave the house
 	# For blink LED when absent button is pressed. So the resident is informed that 
-	# the system is going to sleep.
-	GPIO.output(25,GPIO.HIGH)
+	# the system is going to sleep. 
+	GPIO.output(8,GPIO.HIGH)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.LOW)
+	GPIO.output(8,GPIO.LOW)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.HIGH)
+	GPIO.output(8,GPIO.HIGH)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.LOW)
+	GPIO.output(8,GPIO.LOW)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.HIGH)
+	GPIO.output(8,GPIO.HIGH)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.LOW)
+	GPIO.output(8,GPIO.LOW)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.HIGH)
+	GPIO.output(8,GPIO.HIGH)
 	time.sleep(0.2)
-	GPIO.output(25,GPIO.LOW)
+	GPIO.output(8,GPIO.LOW)
 	time.sleep(1)
 
 GPIO.add_event_detect(residentAbsent, GPIO.FALLING, callback=absent,bouncetime=1000)
@@ -599,8 +599,10 @@ def getHasChangedEntrance():
 	
 # Simulates an activity at the beginning of the programm. For initialization.
 writeOpenKitchen()
+time.sleep(0.1)
 writeClosedKitchen()
 writeOpenEntrance()
+time.sleep(0.1)
 writeClosedEntrance()
 lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
 lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
