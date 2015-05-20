@@ -20,8 +20,8 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-* 5-23 * * * /usr/bin/python /home/pi/projects/dtrace/src/read_time.py
-* 23-5 * * /usr/bin/python /home/pi/projects/dtrace/src/read_time_night.py
+@reboot /usr/bin/python /home/pi/projects/bda/src/main.py
 #
+
 
 

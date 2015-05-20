@@ -55,10 +55,6 @@ define act_on_kitchen_closed notify kitchen:closed {system("sudo /usr/bin/python
 define act_on_entrance_open notify entrance:open {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_open_entrance.py &")}
 define act_on_entrance_closed notify entrance:closed {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_closed_entrance.py &")}
 
-# for resident absent
-define act_on_entrance_open_alarm notify entrance:open {system("sudo /usr/bin/python /home/pi/projects/bda/src/set_alarm_light.py &")}
-define act_on_entrance_closed_alarm notify entrance:closed {system("sudo /usr/bin/python /home/pi/projects/bda/src/clear_alarm_light.py &")}
-
 
 define Test dummy
 attr Test setList on off
@@ -100,13 +96,13 @@ define FileLog_bedroom FileLog ./log/bedroom-%Y.log bedroom
 attr FileLog_bedroom logtype text
 attr FileLog_bedroom room ZWave
 
-define act_on_toilet_closed notify toilet:basicReport:.00 {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py &")}
+define act_on_toilet_closed notify toilet:basicReport:.00 {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time_zwave.py &")}
 
-define act_on_toilet_open notify toilet:basicReport:.ff {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py &")}
+define act_on_toilet_open notify toilet:basicReport:.ff {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time_zwave.py &")}
 
-define act_on_bedroom_closed notify bedroom:basicReport:.00 {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py &")}
+define act_on_bedroom_closed notify bedroom:basicReport:.00 {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time_zwave.py &")}
 
-define act_on_bedroom_open notify bedroom:basicReport:.ff {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time.py&")}
+define act_on_bedroom_open notify bedroom:basicReport:.ff {system("sudo /usr/bin/python /home/pi/projects/bda/src/write_time_zwave.py&")}
 
 
 
