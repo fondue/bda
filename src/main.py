@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # v0.1 by Dominik Imhof 03.2015
-# 
+# This script will be started automatically after booting the raspberry pi.
+# This script implies the logic of the detection of the inactivity.
+# This checks the inactivity time and the configuration from the user.
+# It sends messages when the barrier is overshoot.
 
 import time, os
 import pickle
@@ -9,8 +12,7 @@ import smtplib
 # GPIO
 import RPi.GPIO as GPIO  #for GPIO
 # Receive
-import threading
-import picamera, smtplib, sys, time
+import sys
 import email, getpass, imaplib
 from email.header import Header
 from email.mime.image import MIMEImage
@@ -224,7 +226,7 @@ def checkMails():
                     resp, data = m.fetch(emailid, "(RFC822)")
                     email_body = data[0][1]
                     mail = email.message_from_string(email_body)
-                    if mail["Subject"] == 'Code':
+                    if mail["Subject"] == 'Code': # 'Code' ist the Code-Word that has to be in the subject line
 						print "New mail received: Code-Word accepted"
 						global newMails 
 						newMails = True
@@ -761,7 +763,7 @@ while True:
 			
 		if __name__ == '__main__':
 			print "Sende Status"
-			sendemail(mailSendFrom, mailSendTo, "Status!", "E-Mail: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
+			sendemail(mailSendFrom, mailSendTo, "Status", "E-Mail: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranzSchwelleTag)+"\n"+"Schwelle Nacht: "+str(toleranzSchwelleNacht)+"\n" + "Tagesbeginn: "+str(tagStart)+"\n"+"Nachtbeginn: "+str(nachtStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranzSchwelleTagFehler)+"\n"+str(toleranzSchwelleNachtFehler)+"\n"+str(tagStartFehler)+"\n"+str(nachtStartFehler))
 	else:
 		print "no new mails received"
 	print "---------------------------------------------"
@@ -843,8 +845,8 @@ while True:
 	
 		
 		# Check resident has come home and wake up the system:
-		#getHasChangedEntrance()
-		#getHasChangedKitchen()
+		# getHasChangedEntrance()
+		# getHasChangedKitchen()
 		
 		if hasChangedEntrance == True:
 			if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')) < 5:
@@ -890,30 +892,30 @@ while True:
 								lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
 					
 					
-						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+						# Acknowledge (quittieren) when button or sensor detect activity:
 						if ((GPIO.input(quittieren_button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
 							print time.time() - lastTimeKitchen
 							print time.time() - lastTimeEntrance
 							print time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')
 							print "Warnung quittiert Tag"
 							writeLastTime()
-							# !!!!!!!!!!!! noch ergaenzen mit write der anderen
+						
 							break
 						print i
 						if i == 99:
-							warnung = True # Sende definitiv eine Warnung
+							warnung = True # Send warning
 						time.sleep(0.1) 
 			
-					GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+					GPIO.output(24,GPIO.LOW) # Alarm stop
 			
 					if warnung == True:
-						GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+						GPIO.output(24,GPIO.LOW) # Alarm stop
 						writeLastTime()
 						warnung = False 
 						if __name__ == '__main__':
 							print "Sende Warnung"
 							GPIO.output(25,GPIO.HIGH)
-							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo\n\nZu wenig Aktivitaet wurde in der Wohnung vom Bewohner festgestellt!\nEs kann sein, dass eine Notsituation besteht!\n\nGruesse von der Inaktivitaetserkennung')
 							time.sleep(1)
 							GPIO.output(25,GPIO.LOW)
 	
@@ -943,7 +945,7 @@ while True:
 								lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_open_kitchen.pkl')
 					
 
-						# Quittieren wenn Schalter oder Sensoren betaetigt werden:
+						# Acknowledge (quittieren) when button or sensor detect activity:
 						if ((GPIO.input(quittieren_button) == True) or (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5 or (time.time() - lastTimeKitchen)< 5 or (time.time() - lastTimeEntrance) < 5):
 							print time.time() - lastTimeKitchen
 							print time.time() - lastTimeEntrance
@@ -953,19 +955,19 @@ while True:
 							break
 						print i
 						if i == 99:
-							warnung = True # Sende definitiv eine Warnung
+							warnung = True # Send warning
 						time.sleep(0.1) 
 			
-					GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+					GPIO.output(24,GPIO.LOW) # Alarm stop
 			
 					if warnung == True:
-						GPIO.output(24,GPIO.LOW) # Alarm ausschalten
+						GPIO.output(24,GPIO.LOW) # Alarm stop
 						writeLastTime()
 						warnung = False 
 						if __name__ == '__main__':
 							print "Sende Warnung"
 							GPIO.output(25,GPIO.HIGH)
-							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo, zu wenig Aktivitaet in der Wohnung vom Muster Bewohner wurde festgestellt!\nGruesse vom PI')
+							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo\n\nZu wenig Aktivitaet wurde in der Wohnung vom Bewohner festgestellt!\nEs kann sein, dass eine Notsituation besteht!\n\nGruesse von der Inaktivitaetserkennung')
 							time.sleep(1)
 							GPIO.output(25,GPIO.LOW)
 		print "n: ",n		
