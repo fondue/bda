@@ -139,6 +139,14 @@ warnung = False
 absent_bool = False #for enabling system when resident comes home
 absent_count = False #for only enter the for loop once
 
+# for detection a change of the barriers from night to day
+localtime = time.localtime(time.time()).tm_hour
+if localtime >= tagStartInitInt and localtime < nachtStartInitInt:
+	nacht_old = False
+else:
+	nacht_old = True
+
+
 #-------------------------------------------------------------------
 
 #Interrupts GPIO
@@ -661,19 +669,8 @@ while True:
 		nachtStart = readNachtBeginnOld()
 		print "Start der Nacht: ", nachtStart, "Uhr"
 	
-# check day/night
-	localtime = time.localtime(time.time()).tm_hour
-	print "Aktuelle Stunde: ", localtime
 
-	if localtime >= tagStart and localtime < nachtStart:
-		print "It's day"
-		tag = True
-		nacht = False
-	
-	else:
-		print "It's night"
-		tag = False
-		nacht = True	
+			
 	print "---------------------------------------------"
 
 	mailSendTo = readAddress()
@@ -863,6 +860,27 @@ while True:
 		if (time.time() - os.path.getmtime('/home/pi/projects/bda/data/time_zwave.pkl')) < 5:
 			absent_bool = False
 		#-------------------------------
+		
+		
+		# check day/night
+		localtime = time.localtime(time.time()).tm_hour
+		print "Aktuelle Stunde: ", localtime
+
+		if localtime >= tagStart and localtime < nachtStart: 
+			print "It's day"
+			tag = True
+			nacht = False
+			# for detecting a change of the barrier from night to day:
+			if nacht_old != nacht:
+				writeLastTime()
+				nacht_old = False
+	
+		else:
+			print "It's night"
+			tag = False
+			nacht = True
+			nacht_old = True
+		#--------------------------------------------------
 		
 		if absent_bool == False: #!!!!
 		#if GPIO.input(button) == True:
