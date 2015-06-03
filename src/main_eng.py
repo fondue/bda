@@ -927,7 +927,7 @@ while True:
 						if __name__ == '__main__':
 							print "Sende Warnung"
 							GPIO.output(25,GPIO.HIGH)
-							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo\n\nZu wenig Aktivitaet wurde in der Wohnung vom Bewohner festgestellt!\nEs kann sein, dass eine Notsituation besteht!\n\nGruesse von der Inaktivitaetserkennung')
+							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo\n\nZu wenig Aktivitaet wurde in der Wohnung des Bewohners festgestellt!\nEs kann sein, dass eine Notsituation besteht!\n\nGruesse von der Inaktivitaetserkennung')
 							time.sleep(1)
 							GPIO.output(25,GPIO.LOW)
 	
@@ -979,7 +979,7 @@ while True:
 						if __name__ == '__main__':
 							print "Sende Warnung"
 							GPIO.output(25,GPIO.HIGH)
-							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo\n\nZu wenig Aktivitaet wurde in der Wohnung vom Bewohner festgestellt!\nEs kann sein, dass eine Notsituation besteht!\n\nGruesse von der Inaktivitaetserkennung')
+							sendemail(mailSendFrom, mailSendTo, 'Warnung!', 'Hallo\n\nZu wenig Aktivitaet wurde in der Wohnung des Bewohners festgestellt!\nEs kann sein, dass eine Notsituation besteht!\n\nGruesse von der Inaktivitaetserkennung')
 							time.sleep(1)
 							GPIO.output(25,GPIO.LOW)
 		print "n: ",n		
