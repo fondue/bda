@@ -291,12 +291,6 @@ def checkMails():
        exit()
 
 
-#def writeLastTime():
-#    with open('/home/pi/projects/bda/data/last_time.txt','w') as f:
-#		value = time.time()
-#		f.write(str(value))
-#		f.close()
-
 def readLastTime():
 	with open('/home/pi/projects/bda/data/time_zwave.pkl', 'rb') as f:
 		t = pickle.load(f)
@@ -586,12 +580,6 @@ writeClosedEntrance()
 lastTimeKitchen = os.path.getmtime('/home/pi/projects/bda/data/time_closed_kitchen.pkl')
 lastTimeEntrance = os.path.getmtime('/home/pi/projects/bda/data/time_closed_entrance.pkl')
 # ------------------------------------------------------
-
-#def sendError():
-#	if errorSchwelleNacht == True:
-#		errorSchwelleNacht = False
-#		toleranzSchwelleNachtFehler = readSchwelleNachtString()
-#		return "Error: " + toleranzSchwelleNachtFehler 
 
 
 while True:
