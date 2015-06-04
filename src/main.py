@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# v0.1 by Dominik Imhof 03.2015
+# v0.1 by Dominik Imhof 05.2015
 # This script will be started automatically after booting the raspberry pi.
 # This script implies the logic of the detection of the inactivity.
 # This checks the inactivity time and the configuration from the user.
@@ -29,6 +29,9 @@ GPIO.setwarnings(False)
 GPIO.setup(24,GPIO.OUT) # for LED quitt
 GPIO.setup(25,GPIO.OUT) # for LED warning
 GPIO.setup(8,GPIO.OUT) # for LED alarm
+GPIO.output(24,GPIO.LOW)
+GPIO.output(25,GPIO.LOW)
+GPIO.output(8,GPIO.LOW)
 GPIO.setup(10,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for shutdown
 shutdownSwitch = 10
 GPIO.setup(9,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # for quittieren
@@ -69,8 +72,8 @@ with open("/home/pi/projects/bda/data/address_old.txt","w") as f:
 	f.write(addressInit)
 	f.close()
 
-barrierDayInitString = "30"
-barrierDayInitInt = 30
+barrierDayInitString = "10"
+barrierDayInitInt = 10
 with open("/home/pi/projects/bda/data/barrier_day.txt","w") as f:			
 	f.write(barrierDayInitString)
 	f.close()
@@ -78,8 +81,8 @@ with open("/home/pi/projects/bda/data/barrier_day_old.txt","w") as f:
 	f.write(barrierDayInitString)
 	f.close()	
 
-barrierNightInitString = "30"
-barrierNightInitInt = 30
+barrierNightInitString = "15"
+barrierNightInitInt = 15
 with open("/home/pi/projects/bda/data/barrier_night.txt","w") as f:			
 	f.write(barrierNightInitString)
 	f.close()
@@ -109,7 +112,6 @@ with open("/home/pi/projects/bda/data/night_start_old.txt","w") as f:
 
 # Receive mail
 
-#MailReceiveUSER = 'dominik.imhof@stud.hslu.ch'
 MailReceiveUSER = 'bda15-inat@ihomelab-lists.ch'
 MailReceivePWD = 'PCnO5CMU'
 # MailReceiveSRV = 'imap.hslu.ch'
@@ -119,7 +121,7 @@ MailSendUSER = ''
 MailSendPWD = ''
 MailSendSRV = 'mail.gmx.net'
 MailSendFROM = MailReceiveUSER
-MailSendTO = 'dominik.imhof@stud.hslu.ch'
+
 
 # Send Mail
 mailServer = 'asmtp.mail.hostpoint.ch'
@@ -127,12 +129,10 @@ mailPort = 587
 mailLogin = 'bda15-inat@ihomelab-lists.ch'
 mailPass = 'PCnO5CMU'
 mailSendFrom = mailLogin
-mailSendTo = 'dominik.imhof@stud.hslu.ch'
 mailTLS = True
 mailDebug = False
 #------------------------------------------------------------------
 
-# toleranzSchwelle = 10
 warning = False
 absent_bool = False #for enabling system when resident comes home
 absent_count = False #for only enter the for loop once
@@ -152,7 +152,7 @@ else:
 # Shutdown switch
 def shutdown(pin):
 	print "shutdown"
-	#os.system("sudo shutdown -h now")
+	os.system("sudo shutdown -h now")
 	time.sleep(3)	
 
 GPIO.add_event_detect(shutdownSwitch, GPIO.FALLING, callback=shutdown,bouncetime=500)
@@ -208,8 +208,6 @@ def sendemail(from_addr, to_addr, subject, message):
         if conn:
             conn.quit()
             
-#sendemail(mailSendFrom, mailSendTo, 'Subject-Test!', 'Hallo\nGruesse vom PI')
-    
 
 # check Mails
 running = True
@@ -310,9 +308,7 @@ def writeLastTime():
 		value = time.time()
 		#print value
 		pickle.dump(value,f)
-		#lastTime = os.path.getmtime('/home/pi/projects/bda/data/time_zwp.pkl')
-		#f.write(str(value))
-		#f.close()
+
 	
 def readBarrierDay():
 	f = open('/home/pi/projects/bda/data/barrier_day.txt')
@@ -321,10 +317,8 @@ def readBarrierDay():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -337,10 +331,8 @@ def readBarrierDayOld():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -352,10 +344,8 @@ def readBarrierDayString():# String, to send the error back to the user
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return line
 	# close the file
 	f.close()	
@@ -367,10 +357,8 @@ def readBarrierNight():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -382,10 +370,8 @@ def readBarrierNightOld():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -398,9 +384,8 @@ def readBarrierNightString():# String, to send the error back to the user
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
 		#print line
 		return line
 	# close the file
@@ -413,10 +398,8 @@ def readAddress():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return line
 	# close the file
 	f.close()
@@ -428,10 +411,8 @@ def readDayStart():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -443,10 +424,8 @@ def readDayStartOld():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -458,10 +437,8 @@ def readDayStartString(): # String, to send the error back to the user
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return line
 	# close the file
 	f.close()
@@ -473,10 +450,8 @@ def readNightStart():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -488,10 +463,8 @@ def readNightStartOld():
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return int(line)
 	# close the file
 	f.close()
@@ -503,10 +476,8 @@ def readNightStartString(): # String, to send the error back to the user
 		# Zero length indicates EOF
 		if len(line) == 0:
 			break
-		# The `line` already has a newline
+		# The line already has a newline
 		# at the end of each line
-		# since it is reading from a file.
-		#print line
 		return line
 	# close the file
 	f.close()
@@ -671,12 +642,12 @@ while True:
 	print "Ziel-Adresse: ", mailSendTo
 
 	try:
-		toleranceBarrierDay = readBarrierDay() # * 60
+		toleranceBarrierDay = readBarrierDay() * 3600
 		toleranceBarrierDayStr = str(toleranceBarrierDay)
 		with open("/home/pi/projects/bda/data/barrier_day_old.txt","w") as f:			
 			f.write(toleranceBarrierDayStr)
 			f.close()
-		print "Toleranz-Schwelle Tag: ", toleranceBarrierDay, "Sekunden"
+		print "Toleranz-Schwelle Tag: ", toleranceBarrierDay / 3600, "Stunden"
 	except ValueError:
 		errorBarrierDay = True
 		print "   "
@@ -684,17 +655,16 @@ while True:
 		print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe!"
 		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 		print "   "
-		toleranceBarrierDay = readBarrierDayOld()
-		print "Toleranz-Schwelle Tag: ", toleranceBarrierDay, "Sekunden"
-	
+		toleranceBarrierDay = readBarrierDayOld() * 3600
+		print "Toleranz-Schwelle Tag: ", toleranceBarrierDay / 3600, "Stunden"
 	
 	try:
-		toleranceBarrierNight = readBarrierNight() # * 60 
+		toleranceBarrierNight = readBarrierNight() * 3600 
 		toleranceBarrierNightStr = str(toleranceBarrierNight)
 		with open("/home/pi/projects/bda/data/barrier_night_old.txt","w") as f:			
 			f.write(toleranceBarrierNightStr)
 			f.close()
-		print "Toleranz-Schwelle Nacht: ", toleranceBarrierNight, "Sekunden"
+		print "Toleranz-Schwelle Nacht: ", toleranceBarrierNight / 3600, "Stunden"
 	except ValueError:
 		errorBarrierNight = True
 		print "   "
@@ -702,8 +672,8 @@ while True:
 		print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe!"
 		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 		print "   "
-		toleranceBarrierNight = readBarrierNightOld()
-		print "Toleranz-Schwelle Nacht: ", toleranceBarrierNight, "Sekunden"
+		toleranceBarrierNight = readBarrierNightOld() * 3600
+		print "Toleranz-Schwelle Nacht: ", toleranceBarrierNight / 3600, "Stunden"
 	print "---------------------------------------------"
 
 		# send state with errors
@@ -763,7 +733,7 @@ while True:
 	# check states of sensors every second for 30 times, then checkMails()
 	# check every second, that short changes of the EnOcean sensors cant be detected also.
 	# checkMails dont need to bee checked every second.
-	for n in range (1,21):
+	for n in range (1,30): # 30 * 1 s sleep
 		
 			
 		# starts LED when door of the house has opened. Clears LED when door is closed.
@@ -783,7 +753,7 @@ while True:
 		# after this time, every activity wakes the system up
 		if absent_bool == True and absent_count == True:
 			
-			for i in range (1,20):
+			for i in range (1,600): # waits 10 minutes (600 * 1 s sleep)
 				print "i: ",i
 				time.sleep(1)
 				#absent_bool = True
@@ -884,7 +854,7 @@ while True:
 				if time.time() - lastTime >= toleranceBarrierDay:
 					print "Toleranz-Schwelle Tag ueberschritten"
 			
-					for i in range (1,100):
+					for i in range (1,6000): # Prealarm for 10 minutes (6000 * 0.1 s sleep) 
 						GPIO.output(24,GPIO.HIGH)
 					
 						getHasChangedEntrance()
@@ -914,14 +884,14 @@ while True:
 						
 							break
 						print i
-						if i == 99:
+						if i == 5999:
 							warning = True # Send warning
 						time.sleep(0.1) 
 			
-					GPIO.output(24,GPIO.LOW) # Alarm stop
+					GPIO.output(24,GPIO.LOW) # Prealarm stop
 			
 					if warning == True:
-						GPIO.output(24,GPIO.LOW) # Alarm stop
+						GPIO.output(24,GPIO.LOW) # Prealarm stop
 						writeLastTime()
 						warning = False 
 						if __name__ == '__main__':
@@ -937,7 +907,7 @@ while True:
 				if time.time() - lastTime >= toleranceBarrierNight:
 					print "Toleranz-Schwelle Nacht ueberschritten"
 			
-					for i in range (1,100):
+					for i in range (1,6000):# Prealarm for 10 minutes (6000 * 0.1 s sleep)
 						GPIO.output(24,GPIO.HIGH)
 					
 						getHasChangedEntrance()
@@ -966,14 +936,14 @@ while True:
 							writeLastTime()
 							break
 						print i
-						if i == 99:
+						if i == 5999: 
 							warning = True # Send warning
 						time.sleep(0.1) 
 			
-					GPIO.output(24,GPIO.LOW) # Alarm stop
+					GPIO.output(24,GPIO.LOW) # Prealarm stop
 			
 					if warning == True:
-						GPIO.output(24,GPIO.LOW) # Alarm stop
+						GPIO.output(24,GPIO.LOW) # Prealarm stop
 						writeLastTime()
 						warning = False 
 						if __name__ == '__main__':
@@ -986,7 +956,7 @@ while True:
 				
 		time.sleep(1)
 					
-	time.sleep(2) 
+	time.sleep(1) 
 		
 
 
