@@ -642,10 +642,10 @@ while True:
 	print "Ziel-Adresse: ", mailSendTo
 
 	try:
-		toleranceBarrierDay = readBarrierDay() * 3600
-		toleranceBarrierDayStr = str(toleranceBarrierDay)
+		toleranceBarrierDay = readBarrierDay() * 3600 # because of calculating hours to seconds
+		toleranceBarrierDayStrOld = str(toleranceBarrierDay / 3600)
 		with open("/home/pi/projects/bda/data/barrier_day_old.txt","w") as f:			
-			f.write(toleranceBarrierDayStr)
+			f.write(toleranceBarrierDayStrOld)
 			f.close()
 		print "Toleranz-Schwelle Tag: ", toleranceBarrierDay / 3600, "Stunden"
 	except ValueError:
@@ -655,14 +655,14 @@ while True:
 		print "ERROR: Schwelle Tag konnte nicht gelesen werden. \nFalsche Eingabe!"
 		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 		print "   "
-		toleranceBarrierDay = readBarrierDayOld() * 3600
+		toleranceBarrierDay = readBarrierDayOld() * 3600 # because of calculating hours to seconds
 		print "Toleranz-Schwelle Tag: ", toleranceBarrierDay / 3600, "Stunden"
 	
 	try:
-		toleranceBarrierNight = readBarrierNight() * 3600 
-		toleranceBarrierNightStr = str(toleranceBarrierNight)
+		toleranceBarrierNight = readBarrierNight() * 3600 # because of calculating hours to seconds
+		toleranceBarrierNightStrOld = str(toleranceBarrierNight / 3600)
 		with open("/home/pi/projects/bda/data/barrier_night_old.txt","w") as f:			
-			f.write(toleranceBarrierNightStr)
+			f.write(toleranceBarrierNightStrOld)
 			f.close()
 		print "Toleranz-Schwelle Nacht: ", toleranceBarrierNight / 3600, "Stunden"
 	except ValueError:
@@ -672,7 +672,7 @@ while True:
 		print "ERROR: Schwelle Nacht konnte nicht gelesen werden. \nFalsche Eingabe!"
 		print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 		print "   "
-		toleranceBarrierNight = readBarrierNightOld() * 3600
+		toleranceBarrierNight = readBarrierNightOld() * 3600 # because of calculating hours to seconds
 		print "Toleranz-Schwelle Nacht: ", toleranceBarrierNight / 3600, "Stunden"
 	print "---------------------------------------------"
 
