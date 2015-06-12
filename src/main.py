@@ -712,7 +712,7 @@ while True:
 			
 		if __name__ == '__main__':
 			print "Sende Status"
-			sendemail(mailSendFrom, mailSendTo, "Status", "E-Mail: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranceBarrierDay)+"\n"+"Schwelle Nacht: "+str(toleranceBarrierNight)+"\n" + "Tagesbeginn: "+str(dayStart)+"\n"+"Nachtbeginn: "+str(nightStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranceBarrierDayFault)+"\n"+str(toleranceBarrierNightFault)+"\n"+str(dayStartFault)+"\n"+str(nightStartFault))
+			sendemail(mailSendFrom, mailSendTo, "Status", "E-Mail: "+mailSendTo+"\n"+"Schwelle Tag: "+str(toleranceBarrierDay / 3600)+"\n"+"Schwelle Nacht: "+str(toleranceBarrierNight / 3600)+"\n" + "Tagesbeginn: "+str(dayStart)+"\n"+"Nachtbeginn: "+str(nightStart)+"\n----------------------------------------------------"+"\n\n"+str(toleranceBarrierDayFault)+"\n"+str(toleranceBarrierNightFault)+"\n"+str(dayStartFault)+"\n"+str(nightStartFault))
 	else:
 		print "no new mails received"
 	print "---------------------------------------------"
